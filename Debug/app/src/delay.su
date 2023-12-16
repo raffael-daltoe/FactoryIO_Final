@@ -1,0 +1,2 @@
+delay.c:16:6:BSP_DELAY_TIM_init	8	static
+delay.c:38:6:BSP_DELAY_TIM_ms	16	static

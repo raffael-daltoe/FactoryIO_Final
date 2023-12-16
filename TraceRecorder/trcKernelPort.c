@@ -1,15 +1,48 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
+ *
+ * trcKernelPort.c
+ *
+ * The FreeRTOS-specific parts of the trace recorder
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * The FreeRTOS specific parts of the trace recorder
- */
+ ******************************************************************************/
 
 #include "FreeRTOS.h"
-#include "trcInternalBuffer.h"
 
 #if (!defined(TRC_USE_TRACEALYZER_RECORDER) && configUSE_TRACE_FACILITY == 1)
 #error Trace Recorder: You need to include trcRecorder.h at the end of your FreeRTOSConfig.h!
@@ -71,7 +104,7 @@
 
 #if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING) || (defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0))
 
-static TaskType HandleTzCtrl = 0;       /* TzCtrl task TCB */
+static TaskType HandleTzCtrl = NULL;       /* TzCtrl task TCB */
 
 #if defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1)
 
@@ -87,6 +120,12 @@ static StaticTask_t tcbTzCtrl;
 
 /* The TzCtrl task - receives commands from Tracealyzer (start/stop) */
 static portTASK_FUNCTION(TzCtrl, pvParameters);
+
+#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
+void prvReportStackUsage(void);
+#else /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
+#define prvReportStackUsage()
+#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 
 #endif /* (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING) || (defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)) */
 
@@ -310,9 +349,82 @@ void cortex_a9_r5_exit_critical(int cs_type)
 #endif
 
 #if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-uint32_t prvTraceGetStackHighWaterMark(void* task)
+
+typedef struct {
+	void* tcb;
+	uint32_t uiPreviousLowMark;
+} TaskStackMonitorEntry_t;
+
+TaskStackMonitorEntry_t tasksInStackMonitor[TRC_CFG_STACK_MONITOR_MAX_TASKS] = { { NULL } };
+
+int tasksNotIncluded = 0;
+
+void prvAddTaskToStackMonitor(void* task)
 {
-	return uxTaskGetStackHighWaterMark(task);
+	int i;
+	int foundEmptySlot = 0;
+
+	// find an empty slot
+	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
+	{
+		if (tasksInStackMonitor[i].tcb == NULL)
+		{
+			tasksInStackMonitor[i].tcb = task;
+			tasksInStackMonitor[i].uiPreviousLowMark = 0xFFFFFFFF;
+			foundEmptySlot = 1;
+			break;
+		}
+	}
+
+	if (foundEmptySlot == 0)
+	{
+		tasksNotIncluded++;
+	}
+}
+
+void prvRemoveTaskFromStackMonitor(void* task)
+{
+	int i;
+	
+	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
+	{
+		if (tasksInStackMonitor[i].tcb == task)
+		{
+			tasksInStackMonitor[i].tcb = NULL;
+			tasksInStackMonitor[i].uiPreviousLowMark = 0;
+		}
+	}
+}
+
+void prvReportStackUsage()
+{
+	static int i = 0;	/* Static index used to loop over the monitored tasks */
+	int count = 0;		/* The number of generated reports */
+	int initial = i;	/* Used to make sure we break if we are back at the inital value */
+	
+	do
+	{
+		/* Check the current spot */
+		if (tasksInStackMonitor[i].tcb != NULL)
+		{
+			/* Get the amount of unused stack */
+			uint32_t unusedStackSpace = uxTaskGetStackHighWaterMark((TaskType)tasksInStackMonitor[i].tcb);
+
+			/* Store for later use */
+			if (tasksInStackMonitor[i].uiPreviousLowMark > unusedStackSpace)
+				tasksInStackMonitor[i].uiPreviousLowMark = unusedStackSpace;
+
+#if TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT
+			prvTraceStoreKernelCallWithParam(TRACE_UNUSED_STACK, TRACE_CLASS_TASK, TRACE_GET_TASK_NUMBER(tasksInStackMonitor[i].tcb), tasksInStackMonitor[i].uiPreviousLowMark);
+#else /* TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT */
+			prvTraceStoreEvent2(PSF_EVENT_UNUSED_STACK, (uint32_t)tasksInStackMonitor[i].tcb, tasksInStackMonitor[i].uiPreviousLowMark);
+#endif /* TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT */
+
+			count++;
+		}
+
+		i = (i + 1) % TRC_CFG_STACK_MONITOR_MAX_TASKS; // Move i beyond this task
+	} while (count < TRC_CFG_STACK_MONITOR_MAX_REPORTS && i != initial);
 }
 #endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 
@@ -325,12 +437,9 @@ extern volatile uint32_t NoRoomForSymbol;
 extern volatile uint32_t NoRoomForObjectData;
 extern volatile uint32_t LongestSymbolName;
 extern volatile uint32_t MaxBytesTruncated;
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-extern volatile uint32_t TaskStacksNotIncluded;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 
 /* User Event Channel for giving warnings regarding NoRoomForSymbol etc. */
-traceString trcWarningChannel = 0;
+traceString trcWarningChannel;
 
 #define TRC_PORT_MALLOC(size) pvPortMalloc(size)
 
@@ -352,32 +461,31 @@ void vTraceEnable(int startOption)
 {
 	int32_t bytes = 0;
 	int32_t status;
-	TracealyzerCommandType msg;
 	extern uint32_t RecorderEnabled;
+	TracealyzerCommandType msg;
 
-	/* Make sure recorder data is initialized */
-	vTraceInitialize();
-
-	if (HandleTzCtrl == 0)
+	/* Only do this first time...*/
+	if (HandleTzCtrl == NULL)
 	{
 		TRC_STREAM_PORT_INIT();
-
-		/* The #WFR channel means "Warnings from Recorder" and
+		
+	   /* The #WFR channel means "Warnings from Recorder" and
 		* is used to store warnings and errors from the recorder.
 		* The abbreviation #WFR is used instead of the longer full name,
-		* to avoid truncation by small slots in the symbol table.
+		* to avoid truncation by small slots in the symbol table. 
 		* This is translated in Tracealyzer and shown as the full name,
 		* "Warnings from Recorder".
 		*
 		* Note: Requires that TRC_CFG_INCLUDE_USER_EVENTS is 1. */
-		trcWarningChannel = xTraceRegisterString("#WFR");
+		
+		trcWarningChannel = xTraceRegisterString("#WFR"); 
 
 		/* Creates the TzCtrl task - receives trace commands (start, stop, ...) */
-#if defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1)
+		#if defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1)
 		HandleTzCtrl = xTaskCreateStatic(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, stackTzCtrl, &tcbTzCtrl);
-#else
-		xTaskCreate(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, &HandleTzCtrl);
-#endif
+		#else
+		xTaskCreate( TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, &HandleTzCtrl );
+		#endif
 
 		if (HandleTzCtrl == NULL)
 		{
@@ -424,7 +532,7 @@ void vTraceEnable(int startOption)
 		msg.param1 = 1;
 		prvProcessCommand(&msg);
 	}
-	else if (startOption == TRC_INIT)
+	else
 	{
 		/* On TRC_INIT */
 		TRC_PORT_SPECIFIC_INIT();
@@ -528,6 +636,22 @@ void* prvTraceGetCurrentTaskHandle(void)
 }
 
 /*******************************************************************************
+ * prvIsNewTCB
+ *
+ * Tells if this task is already executing, or if there has been a task-switch.
+ * Assumed to be called within a trace hook in kernel context.
+ ******************************************************************************/
+uint32_t prvIsNewTCB(void* pNewTCB)
+{
+	if (pCurrentTCB != pNewTCB)
+	{
+		pCurrentTCB = pNewTCB;
+		return 1;
+	}
+	return 0;
+}
+
+/*******************************************************************************
  * prvTraceIsSchedulerSuspended
  *
  * Returns true if the RTOS scheduler currently is disabled, thus preventing any
@@ -552,10 +676,10 @@ unsigned char prvTraceIsSchedulerSuspended(void)
 static void prvCheckRecorderStatus(void)
 {
 #if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	if (TaskStacksNotIncluded > 0)
+	if (tasksNotIncluded > 0)
 	{
 		prvTraceWarning(PSF_WARNING_STACKMON_NO_SLOTS);
-		TaskStacksNotIncluded = 0;
+		tasksNotIncluded = 0;
 	}
 #endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 
@@ -789,25 +913,10 @@ void* prvTraceGetCurrentTaskHandle()
 ******************************************************************************/
 void vTraceEnable(int startOption)
 {
-	/* Make sure recorder data is initialized */
-	vTraceInitialize();
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	/* Creates the TzCtrl task - reports unused stack */
-	if (HandleTzCtrl == 0)
-	{
-#if defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1)
-		HandleTzCtrl = xTaskCreateStatic(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, stackTzCtrl, &tcbTzCtrl);
-#else /* defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1) */
-		xTaskCreate(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, &HandleTzCtrl);
-#endif /* defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1) */
-	}
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
+	prvTraceInitTraceData();
 
 	if (startOption == TRC_START)
 	{
-		prvTraceInitTimestamps();
-		
 		vTraceStart();
 	}
 	else if (startOption == TRC_START_AWAIT_HOST)
@@ -818,6 +927,19 @@ void vTraceEnable(int startOption)
 	{
 		prvTraceError("Unexpected argument to vTraceEnable (snapshot mode)");
 	}
+
+#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
+	/* Creates the TzCtrl task - reports unsed stack */
+	if (HandleTzCtrl == NULL)
+	{
+#if defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1)
+		HandleTzCtrl = xTaskCreateStatic(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, stackTzCtrl, &tcbTzCtrl);
+#else /* defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1) */
+		xTaskCreate(TzCtrl, STRING_CAST("TzCtrl"), TRC_CFG_CTRL_TASK_STACK_SIZE, NULL, TRC_CFG_CTRL_TASK_PRIORITY, &HandleTzCtrl);
+#endif /* defined(configSUPPORT_STATIC_ALLOCATION) && (configSUPPORT_STATIC_ALLOCATION == 1) */
+	}
+
+#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 }
 
 /*******************************************************************************
@@ -890,8 +1012,6 @@ void vTraceInitObjectPropertyTable()
 /* Initialization of the handle mechanism, see e.g, prvTraceGetObjectHandle */
 void vTraceInitObjectHandleStack()
 {
-	uint32_t i = 0;
-
 	objectHandleStacks.indexOfNextAvailableHandle[0] = objectHandleStacks.lowestIndexOfClass[0] = 0;
 	objectHandleStacks.indexOfNextAvailableHandle[1] = objectHandleStacks.lowestIndexOfClass[1] = (TRC_CFG_NQUEUE);
 	objectHandleStacks.indexOfNextAvailableHandle[2] = objectHandleStacks.lowestIndexOfClass[2] = (TRC_CFG_NQUEUE) + (TRC_CFG_NSEMAPHORE);
@@ -911,16 +1031,6 @@ void vTraceInitObjectHandleStack()
 	objectHandleStacks.highestIndexOfClass[6] = (TRC_CFG_NQUEUE) + (TRC_CFG_NSEMAPHORE) + (TRC_CFG_NMUTEX) + (TRC_CFG_NTASK) + (TRC_CFG_NISR) + (TRC_CFG_NTIMER) + (TRC_CFG_NEVENTGROUP) - 1;
 	objectHandleStacks.highestIndexOfClass[7] = (TRC_CFG_NQUEUE) + (TRC_CFG_NSEMAPHORE) + (TRC_CFG_NMUTEX) + (TRC_CFG_NTASK) + (TRC_CFG_NISR) + (TRC_CFG_NTIMER) + (TRC_CFG_NEVENTGROUP) + (TRC_CFG_NSTREAMBUFFER) - 1;
 	objectHandleStacks.highestIndexOfClass[8] = (TRC_CFG_NQUEUE) + (TRC_CFG_NSEMAPHORE) + (TRC_CFG_NMUTEX) + (TRC_CFG_NTASK) + (TRC_CFG_NISR) + (TRC_CFG_NTIMER) + (TRC_CFG_NEVENTGROUP) + (TRC_CFG_NSTREAMBUFFER) + (TRC_CFG_NMESSAGEBUFFER) - 1;
-
-	for (i = 0; i < TRACE_NCLASSES; i++)
-	{
-		objectHandleStacks.handleCountWaterMarksOfClass[i] = 0;
-	}
-
-	for (i = 0; i < TRACE_KERNEL_OBJECT_COUNT; i++)
-	{
-		objectHandleStacks.objectHandles[i] = 0;
-	}
 }
 
 /* Returns the "Not enough handles" error message for this object class */

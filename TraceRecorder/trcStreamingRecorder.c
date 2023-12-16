@@ -1,12 +1,46 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
- * www.percepio.com
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
  *
- * SPDX-License-Identifier: Apache-2.0
+ * trcStreamingRecorder.c
  *
  * The generic core of the trace recorder's streaming mode.
- */
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
+ * www.percepio.com
+ ******************************************************************************/
 
 #include "trcRecorder.h"
 
@@ -19,24 +53,8 @@
 #include <stdarg.h>
 
 #include "trcExtensions.h"
-#include "trcInternalBuffer.h"
 
-/* Unless specified in trcConfig.h we assume this is a single core target */
-#ifndef TRC_CFG_PLATFORM_NUM_CORES
-#define TRC_CFG_PLATFORM_NUM_CORES 1
-#endif
-
-#ifndef TRC_GET_CURRENT_CORE
-#define TRC_GET_CURRENT_CORE() 0
-#endif
-
-#if (TRC_CFG_PLATFORM_NUM_CORES) > 1
-#define TRC_GET_EVENT_COUNT(eventCounter) (((TRC_GET_CURRENT_CORE() & 0xF) << 12) | (eventCounter & 0xFFF))
-#else
-#define TRC_GET_EVENT_COUNT(eventCounter) eventCounter
-#endif
-
-#define TRC_PLATFORM_CFG_LENGTH 8
+uint32_t trcHeapCounter = 0;
 
 typedef struct{
 	uint16_t EventID;
@@ -91,22 +109,12 @@ typedef struct{
   uint16_t version;
   uint16_t platform;
   uint32_t options;
-  uint32_t numCores;
-  char platform_cfg[TRC_PLATFORM_CFG_LENGTH];
-  uint16_t platform_cfg_patch;
-  uint8_t platform_cfg_minor;
-  uint8_t platform_cfg_major;
   uint32_t heapCounter;
-  uint32_t heapMax;
   uint16_t symbolSize;
   uint16_t symbolCount;
   uint16_t objectDataSize;
   uint16_t objectDataCount;
 } PSFHeaderInfo;
-
-#ifndef TRC_CFG_RECORDER_DATA_INIT
-#define TRC_CFG_RECORDER_DATA_INIT 1
-#endif
 
 
 /* The size of each slot in the Symbol Table */
@@ -142,16 +150,20 @@ typedef struct{
   } ObjectDataTableBuffer;
 } ObjectDataTable;
 
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-typedef struct {
-	void* tcb;
-	uint32_t uiPreviousLowMark;
-} TaskStackMonitorEntry_t;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
+typedef struct{
+	uint16_t Status;  /* 16 bit to avoid implicit padding (warnings) */
+	uint16_t BytesRemaining;
+	char* WritePointer;
+} PageType;
 
 /* Code used for "task address" when no task has started, to indicate "(startup)".
  * This value was used since NULL/0 was already reserved for the idle task. */
 #define HANDLE_NO_TASK 2
+
+/* The status codes for the pages of the internal trace buffer. */
+#define PAGE_STATUS_FREE 0
+#define PAGE_STATUS_WRITE 1
+#define PAGE_STATUS_READ 2
 
 /* Calls prvTraceError if the _assert condition is false. For void functions,
 where no return value is to be provided. */
@@ -168,76 +180,60 @@ where a return value is to be provided. */
 #define GET_ERROR_WARNING_FLAG(errCode) (ErrorAndWarningFlags & (1 << ((errCode) - 1)))
 #define SET_ERROR_WARNING_FLAG(errCode) (ErrorAndWarningFlags |= (1 << ((errCode) - 1)))
 
+/* Used for flags indicating if a certain error or warning has occurred */
+static uint32_t ErrorAndWarningFlags = 0;
+
+/* The Symbol Table instance - keeps names of tasks and other named objects. */
+static SymbolTable symbolTable = { { { 0 } } };
+
+/* This points to the first unused entry in the symbol table. */
+static uint32_t firstFreeSymbolTableIndex = 0;
+
+/* The Object Data Table instance - keeps initial priorities of tasks. */
+static ObjectDataTable objectDataTable = { { { 0 } } };
+
+/* This points to the first unused entry in the object data table. */
+static uint32_t firstFreeObjectDataTableIndex = 0;
+
+/* Keeps track of ISR nesting */
+static uint32_t ISR_stack[TRC_CFG_MAX_ISR_NESTING];
+
+/* Keeps track of ISR nesting */
+static int8_t ISR_stack_index = -1;
+
+/* Any error that occurred in the recorder (also creates User Event) */
+static int errorCode = PSF_ERROR_NONE;
+
 /* Counts the number of trace sessions (not yet used) */
 static uint32_t SessionCounter = 0u;
+
+/* Master switch for recording (0 => Disabled, 1 => Enabled) */
+uint32_t RecorderEnabled = 0u;
 
 /* Used to determine endian of data (big/little) */
 static uint32_t PSFEndianessIdentifier = 0x50534600;
 
 /* Used to interpret the data format */
-static uint16_t FormatVersion = 0x0009;
+static uint16_t FormatVersion = 0x0006;
 
 /* The number of events stored. Used as event sequence number. */
 static uint32_t eventCounter = 0;
 
-/* The extension data */
-PSFExtensionInfoType PSFExtensionInfo = TRC_EXTENSION_INFO;
-
-/* Used for flags indicating if a certain error or warning has occurred */
-static uint32_t ErrorAndWarningFlags TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* The Symbol Table instance - keeps names of tasks and other named objects. */
-static SymbolTable symbolTable TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* This points to the first unused entry in the symbol table. */
-static uint32_t firstFreeSymbolTableIndex TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* The Object Data Table instance - keeps initial priorities of tasks. */
-static ObjectDataTable objectDataTable TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* This points to the first unused entry in the object data table. */
-static uint32_t firstFreeObjectDataTableIndex TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* Keeps track of ISR nesting */
-static uint32_t ISR_stack[TRC_CFG_MAX_ISR_NESTING] TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* Keeps track of ISR nesting */
-static int8_t ISR_stack_index TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* Any error that occurred in the recorder (also creates User Event) */
-static int errorCode TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* The amount of Heap currently being used */
-uint32_t trcHeapCounter TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* The maximum amount of Heap that has been used */
-uint32_t trcHeapMax TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/* Temporary event data storage */
-static largestEventType xEventDataDummy = { { 0, 0, 0 }, { 0 } };
-
-/* The current event */
-static largestEventType *pvCurrentEvent = 0;
-
-/* The payload of the current event that has been initialized using prvTraceBeginStoreEvent() */
-static uint32_t uiCurrentEventPayloadSize = 0;
-
-/* The size of the current event that has been initialized using prvTraceBeginStoreEvent() */
-static uint32_t uiCurrentEventSize = 0;
-
-/* The current event's payload pointer */
-static uint32_t uiCurrentEventPayloadOffset = 0;
-
-/* The most recent tcb address */
-static uint32_t xCurrentTask = 0;
-
 /* Remembers if an earlier ISR in a sequence of adjacent ISRs has triggered a task switch.
 In that case, vTraceStoreISREnd does not store a return to the previously executing task. */
-int32_t isPendingContextSwitch TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+int32_t isPendingContextSwitch = 0;
 
-uint32_t uiTraceTickCount TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-uint32_t timestampFrequency TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-uint32_t DroppedEventCounter TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+uint32_t uiTraceTickCount = 0;
+uint32_t timestampFrequency = 0;
+uint32_t DroppedEventCounter = 0;
+uint32_t TotalBytesRemaining_LowWaterMark = (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT) * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE);
+uint32_t TotalBytesRemaining = (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT) * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE);
+
+PageType PageInfo[TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT];
+
+char* EventBuffer = NULL;
+
+PSFExtensionInfoType PSFExtensionInfo = TRC_EXTENSION_INFO;
 
 /*******************************************************************************
  * NoRoomForSymbol
@@ -252,7 +248,7 @@ uint32_t DroppedEventCounter TRC_CFG_RECORDER_DATA_ATTRIBUTE;
  * This variable should be zero. If not, it shows the number of missing slots so
  * far. In that case, increment SYMBOL_TABLE_SLOTS with (at least) this value.
  ******************************************************************************/
-volatile uint32_t NoRoomForSymbol TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+volatile uint32_t NoRoomForSymbol = 0;
 
 /*******************************************************************************
  * NoRoomForObjectData
@@ -264,7 +260,7 @@ volatile uint32_t NoRoomForSymbol TRC_CFG_RECORDER_DATA_ATTRIBUTE;
  * This variable should be zero. If not, it shows the number of missing slots so
  * far. In that case, increment OBJECT_DATA_SLOTS with (at least) this value.
  ******************************************************************************/
-volatile uint32_t NoRoomForObjectData TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+volatile uint32_t NoRoomForObjectData = 0;
 
 /*******************************************************************************
  * LongestSymbolName
@@ -273,7 +269,7 @@ volatile uint32_t NoRoomForObjectData TRC_CFG_RECORDER_DATA_ATTRIBUTE;
  * otherwise symbol names will be truncated. In that case, set 
  * TRC_CFG_SYMBOL_MAX_LENGTH to (at least) this value.
  ******************************************************************************/
-volatile uint32_t LongestSymbolName TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+volatile uint32_t LongestSymbolName = 0;
 
 /*******************************************************************************
  * MaxBytesTruncated
@@ -284,51 +280,13 @@ volatile uint32_t LongestSymbolName TRC_CFG_RECORDER_DATA_ATTRIBUTE;
  * (usually only the string, unless more than 15 parameters) and this variable
  * holds the maximum number of truncated bytes, from any event.
  ******************************************************************************/
-volatile uint32_t MaxBytesTruncated TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+volatile uint32_t MaxBytesTruncated = 0;
 
-uint16_t CurrentFilterMask TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+uint16_t CurrentFilterMask = 0xFFFF;
 
-uint16_t CurrentFilterGroup TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+uint16_t CurrentFilterGroup = FilterGroup0;
 
-volatile uint32_t uiTraceSystemState TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-/*******************************************************************************
-* TaskStacksNotIncluded
-*
-* Increased in prvAddTaskToStackMonitor(...) if there is no room in the stack
-* monitor.
-******************************************************************************/
-volatile uint32_t TaskStacksNotIncluded TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/*******************************************************************************
-* tasksInStackMonitor
-*
-* Keeps track of the stacks for each task.
-******************************************************************************/
-TaskStackMonitorEntry_t tasksInStackMonitor[TRC_CFG_STACK_MONITOR_MAX_TASKS] TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
-/* RecorderEnabled is a master switch for recording (0 => Disabled, 1 => Enabled) */
-uint32_t RecorderEnabled TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/*******************************************************************************
-* RecorderInitialized
-*
-* Makes sure the recorder data is only initialized once.
-*
-* NOTE: RecorderInitialized is only initialized to 0 if
-* TRC_CFG_RECORDER_DATA_INIT is non-zero.
-* This will avoid issues where the recorder must be started before main(),
-* which can lead to RecorderInitialized be cleared by late initialization after
-* vTraceEnable(TRC_INIT) was called and assigned RecorderInitialized its'
-* value.
-******************************************************************************/
-#if (TRC_CFG_RECORDER_DATA_INIT != 0)
-uint32_t RecorderInitialized = 0;
-#else /* (TRC_CFG_RECORDER_DATA_INIT != 0) */
-uint32_t RecorderInitialized TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-#endif /* (TRC_CFG_RECORDER_DATA_INIT != 0) */
+volatile uint32_t uiTraceSystemState = TRC_STATE_IN_STARTUP;
 
 /* Internal common function for storing string events */
 static void prvTraceStoreStringEventHelper(	int nArgs,
@@ -363,6 +321,16 @@ static void prvTraceStoreExtensionInfo(void);
 
 /* Internal function for starting/stopping the recorder. */
 static void prvSetRecorderEnabled(uint32_t isEnabled);
+
+/* Mark the page read as complete. */
+static void prvPageReadComplete(int pageIndex);
+
+/* Retrieve a buffer page to write to. */
+static int prvAllocateBufferPage(int prevPage);
+
+/* Get the current buffer page index (return value) and the number 
+of valid bytes in the buffer page (bytesUsed). */
+static int prvGetBufferPage(int32_t* bytesUsed);
 
 /* Performs timestamping using definitions in trcHardwarePort.h */
 static uint32_t prvGetTimestamp32(void);
@@ -760,7 +728,7 @@ void vTraceStoreISREnd(int isTaskSwitchRequired)
 		if ((isPendingContextSwitch == 0) || (prvTraceIsSchedulerSuspended()))
 		{
 #if (TRC_CFG_INCLUDE_ISR_TRACING == 1)
-			prvTraceStoreEvent1(PSF_EVENT_TASK_ACTIVATE, (uint32_t)TRACE_GET_CURRENT_TASK());
+			prvTraceStoreEvent1(PSF_EVENT_TS_RESUME, (uint32_t)TRACE_GET_CURRENT_TASK());
 #endif
 		}
 	}
@@ -789,9 +757,6 @@ void vTraceClearError(void)
 	LongestSymbolName = 0;
 	NoRoomForObjectData = 0;
 	MaxBytesTruncated = 0;
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	TaskStacksNotIncluded = 0;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 	errorCode = PSF_ERROR_NONE;
 }
 
@@ -841,79 +806,11 @@ void vTraceSetFilterGroup(uint16_t filterGroup)
 	CurrentFilterGroup = filterGroup;
 }
 
-/******************************************************************************
-* vTraceInitialize
-*
-* Initializes the recorder data.
-* This function will be called by vTraceEnable(...).
-* Only needs to be called manually if traced objects are created before the
-* trace recorder can be enabled, at which point make sure to call this function
-* as early as possible.
-* See TRC_CFG_RECORDER_DATA_INIT in trcConfig.h.
-******************************************************************************/
-void vTraceInitialize(void)
-{
-	uint32_t i = 0;
-
-	if (RecorderInitialized != 0)
-	{
-		return;
-	}
-
-	/* These are set on init so they aren't overwritten by late initialization values. */
-	RecorderEnabled = 0;
-	NoRoomForSymbol = 0;
-	LongestSymbolName = 0;
-	NoRoomForObjectData = 0;
-	MaxBytesTruncated = 0;
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	TaskStacksNotIncluded = 0;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-	CurrentFilterMask = 0xFFFF;
-	CurrentFilterGroup = FilterGroup0;
-	uiTraceSystemState = TRC_STATE_IN_STARTUP;
-	uiTraceTickCount = 0;
-	timestampFrequency = 0;
-	DroppedEventCounter = 0;
-	ErrorAndWarningFlags = 0;
-	errorCode = 0;
-	isPendingContextSwitch = 0;
-	trcHeapCounter = 0;
-	trcHeapMax = 0;
-
-	for (i = 0; i < (SYMBOL_TABLE_BUFFER_SIZE / sizeof(uint32_t)); i++)
-	{
-		symbolTable.SymbolTableBuffer.pSymbolTableBufferUINT32[i] = 0;
-	}
-	firstFreeSymbolTableIndex = 0;
-
-
-	for (i = 0; i < (OBJECT_DATA_TABLE_BUFFER_SIZE / sizeof(uint32_t)); i++)
-	{
-		objectDataTable.ObjectDataTableBuffer.pObjectDataTableBufferUINT32[i] = 0;
-	}
-	firstFreeObjectDataTableIndex = 0;
-
-	for (i = 0; i < TRC_CFG_MAX_ISR_NESTING; i++)
-	{
-		ISR_stack[i] = 0;
-	}
-	ISR_stack_index = -1;
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
-	{
-		tasksInStackMonitor[i].tcb = 0;
-		tasksInStackMonitor[i].uiPreviousLowMark = 0;
-	}
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
-	RecorderInitialized = 1;
-}
 
 /******************************************************************************/
 /*** INTERNAL FUNCTIONS *******************************************************/
 /******************************************************************************/
+
 /* Internal function for starting/stopping the recorder. */
 static void prvSetRecorderEnabled(uint32_t isEnabled)
 {
@@ -931,7 +828,7 @@ static void prvSetRecorderEnabled(uint32_t isEnabled)
 		TRC_STREAM_PORT_ON_TRACE_BEGIN();
 
 		#if (TRC_STREAM_PORT_USE_INTERNAL_BUFFER == 1)
-		TRC_STREAM_PORT_INTERNAL_BUFFER_INIT();
+		prvPagedEventBufferInit(_TzTraceData);
 		#endif
 		
      	eventCounter = 0;
@@ -967,7 +864,7 @@ static void prvTraceStoreStartEvent()
 	}
 	else
 	{
-		currentTask = (void*)TRACE_GET_CURRENT_TASK();
+		currentTask = TRACE_GET_CURRENT_TASK();
 	}
 	
 	eventCounter++;
@@ -977,7 +874,7 @@ static void prvTraceStoreStartEvent()
 		if (pxEvent != NULL)
 		{
 			pxEvent->base.EventID = PSF_EVENT_TRACE_START | PARAM_COUNT(3);
-			pxEvent->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+			pxEvent->base.EventCount = (uint16_t)eventCounter;
 			pxEvent->base.TS = prvGetTimestamp32();
 			pxEvent->param1 = (uint32_t)TRACE_GET_OS_TICKS();
 			pxEvent->param2 = (uint32_t)currentTask;
@@ -1008,7 +905,7 @@ static void prvTraceStoreTSConfig(void)
 		if (event != NULL)
 		{
 			event->base.EventID = PSF_EVENT_TS_CONFIG | (uint16_t)PARAM_COUNT(5);
-			event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+			event->base.EventCount = (uint16_t)eventCounter;
 			event->base.TS = prvGetTimestamp32();
 			
 			event->param1 = (uint32_t)timestampFrequency;
@@ -1023,7 +920,7 @@ static void prvTraceStoreTSConfig(void)
 		if (event != NULL)
 		{
 			event->base.EventID = PSF_EVENT_TS_CONFIG | (uint16_t)PARAM_COUNT(4);
-			event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+			event->base.EventCount = (uint16_t)eventCounter;
 			event->base.TS = prvGetTimestamp32();
 						
 			event->param1 = (uint32_t)timestampFrequency;
@@ -1090,9 +987,6 @@ static void prvTraceStoreObjectDataTable(void)
 /* Stores the header information on Start */
 static void prvTraceStoreHeader(void)
 {
-	int i;
-	char* platform_cfg = TRC_PLATFORM_CFG;
-
   	TRACE_ALLOC_CRITICAL_SECTION();
 
 	TRACE_ENTER_CRITICAL_SECTION();
@@ -1103,21 +997,7 @@ static void prvTraceStoreHeader(void)
 		header->version = FormatVersion;
 		header->platform = TRACE_KERNEL_VERSION;
 		header->options = 0;
-		for (i = 0; i < TRC_PLATFORM_CFG_LENGTH; i++)
-		{
-			header->platform_cfg[i] = platform_cfg[i];
-			if (platform_cfg[i] == 0)
-			{
-				break;
-			}
-		}
-		header->platform_cfg_patch = TRC_PLATFORM_CFG_PATCH;
-		header->platform_cfg_minor = TRC_PLATFORM_CFG_MINOR;
-		header->platform_cfg_major = TRC_PLATFORM_CFG_MAJOR;
-		header->options = 2;
-		header->numCores = TRC_CFG_PLATFORM_NUM_CORES;
 		header->heapCounter = trcHeapCounter;
-		header->heapMax = trcHeapMax;
         /* Lowest bit used for TRC_IRQ_PRIORITY_ORDER */
 		header->options = header->options | (TRC_IRQ_PRIORITY_ORDER << 0);
 		header->symbolSize = SYMBOL_TABLE_SLOT_SIZE;
@@ -1260,174 +1140,6 @@ static const char* prvTraceGetError(int errCode)
 	return NULL;
 }
 
-/* Gets the most recent tcb address */
-uint32_t prvTraceGetCurrentTask(void)
-{
-	return xCurrentTask;
-}
-
-/* Sets the most recent tcb address */
-void prvTraceSetCurrentTask(uint32_t tcb)
-{
-	xCurrentTask = tcb;
-}
-
-/* Begins an event with defined specified payload size. Must call prvTraceEndStoreEvent() to finalize event creation. */
-traceResult prvTraceBeginStoreEvent(uint32_t uiEventCode, uint32_t uiTotalPayloadSize)
-{
-	uint32_t uiPayloadCount;
-
-	if (RecorderEnabled == 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	if (pvCurrentEvent != 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	eventCounter++;
-
-	uiCurrentEventPayloadSize = uiTotalPayloadSize;
-	uiCurrentEventPayloadOffset = 0;
-	uiPayloadCount = (uiTotalPayloadSize + (sizeof(uint32_t) - 1)) / sizeof(uint32_t);	/* 4-byte align */
-	uiCurrentEventSize = sizeof(BaseEvent) + uiPayloadCount * sizeof(uint32_t);
-
-	TRC_STREAM_PORT_ALLOCATE_EVENT(largestEventType, pxEvent, uiCurrentEventSize);
-	if (pxEvent != 0)
-	{
-		pxEvent->base.EventID = (uint16_t)uiEventCode | PARAM_COUNT(uiPayloadCount);
-		pxEvent->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
-
-		pvCurrentEvent = pxEvent;
-	}
-	else
-	{
-		uiCurrentEventSize = 0;
-		return TRACE_FAIL;
-	}
-	
-	return TRACE_SUCCESS;
-}
-
-/* Ends the event that was begun by calling on prvTraceBeginStoreEvent() */
-traceResult prvTraceEndStoreEvent()
-{
-	if (RecorderEnabled == 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	if (pvCurrentEvent == 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	pvCurrentEvent->base.TS = prvGetTimestamp32();
-	TRC_STREAM_PORT_COMMIT_EVENT(pvCurrentEvent, uiCurrentEventSize);
-	
-	uiCurrentEventPayloadSize = 0;
-	uiCurrentEventPayloadOffset = 0;
-	uiCurrentEventSize = 0;
-	pvCurrentEvent = 0;
-
-	return TRACE_SUCCESS;
-}
-
-/* Adds data of size uiSize as event payload */
-traceResult prvTraceStoreEventPayload(void *pvData, uint32_t uiSize)
-{
-	uint32_t i;
-
-	if (pvCurrentEvent == 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	if (uiCurrentEventPayloadOffset + uiSize >  uiCurrentEventPayloadSize)
-	{
-		return TRACE_FAIL;
-	}
-
-	for (i = 0; i < uiSize; i++)
-	{
-		((uint8_t*)pvCurrentEvent->data)[uiCurrentEventPayloadOffset] = ((uint8_t*)pvData)[i];
-		uiCurrentEventPayloadOffset++;
-	}
-
-	return TRACE_SUCCESS;
-}
-
-/* Adds an uint32_t as event payload */
-traceResult prvTraceStoreEventPayload32(uint32_t value)
-{
-	if (pvCurrentEvent == 0)
-	{
-		return TRACE_FAIL;
-	}
-	
-	if (uiCurrentEventPayloadOffset + sizeof(uint32_t) >  uiCurrentEventPayloadSize)
-	{
-		return TRACE_FAIL;
-	}
-
-	/* Make sure we are writing at 32-bit aligned offset */
-	if ((uiCurrentEventPayloadOffset & 3) != 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	*(uint32_t*)&(((uint8_t*)pvCurrentEvent->data)[uiCurrentEventPayloadOffset]) = value;
-	uiCurrentEventPayloadOffset += sizeof(uint32_t);
-
-	return TRACE_SUCCESS;
-}
-
-/* Adds an uint16_t as event payload */
-traceResult prvTraceStoreEventPayload16(uint16_t value)
-{
-	if (pvCurrentEvent == 0)
-	{
-		return TRACE_FAIL;
-	}
-	
-	if (uiCurrentEventPayloadOffset + sizeof(uint16_t) >  uiCurrentEventPayloadSize)
-	{
-		return TRACE_FAIL;
-	}
-
-	/* Make sure we are writing at 16-bit aligned offset */
-	if ((uiCurrentEventPayloadOffset & 1) != 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	*(uint16_t*)&(((uint8_t*)pvCurrentEvent->data)[uiCurrentEventPayloadOffset]) = value;
-	uiCurrentEventPayloadOffset += sizeof(uint16_t);
-
-	return TRACE_SUCCESS;
-}
-
-/* Adds an uint8_t as event payload */
-traceResult prvTraceStoreEventPayload8(uint8_t value)
-{
-	if (pvCurrentEvent == 0)
-	{
-		return TRACE_FAIL;
-	}
-
-	if (uiCurrentEventPayloadOffset + sizeof(uint8_t) >  uiCurrentEventPayloadSize)
-	{
-		return TRACE_FAIL;
-	}
-
-	((uint8_t*)pvCurrentEvent->data)[uiCurrentEventPayloadOffset] = value;
-	uiCurrentEventPayloadOffset += sizeof(uint8_t);
-
-	return TRACE_SUCCESS;
-}
-
 /* Store an event with zero parameters (event ID only) */
 void prvTraceStoreEvent0(uint16_t eventID)
 {
@@ -1473,7 +1185,7 @@ void prvTraceStoreEvent1(uint16_t eventID, uint32_t param1)
 			if (event != NULL)
 			{
 				event->base.EventID = eventID | PARAM_COUNT(1);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 				event->param1 = (uint32_t)param1;
 				TRC_STREAM_PORT_COMMIT_EVENT(event, sizeof(EventWithParam_1));
@@ -1501,7 +1213,7 @@ void prvTraceStoreEvent2(uint16_t eventID, uint32_t param1, uint32_t param2)
 			if (event != NULL)
 			{
 				event->base.EventID = eventID | PARAM_COUNT(2);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 				event->param1 = (uint32_t)param1;
 				event->param2 = param2;
@@ -1533,7 +1245,7 @@ void prvTraceStoreEvent3(	uint16_t eventID,
 			if (event != NULL)
 			{
 				event->base.EventID = eventID | PARAM_COUNT(3);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 				event->param1 = (uint32_t)param1;
 				event->param2 = param2;
@@ -1567,7 +1279,7 @@ void prvTraceStoreEvent(int nParam, uint16_t eventID, ...)
 			if (event != NULL)
 			{
 				event->base.EventID = eventID | (uint16_t)PARAM_COUNT(nParam);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 
 				va_start(vl, eventID);
@@ -1653,7 +1365,7 @@ static void prvTraceStoreStringEventHelper(int nArgs,
 				uint32_t* data32;
 				uint8_t* data8;
 				event->base.EventID = (eventID) | (uint16_t)PARAM_COUNT(nWords);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 
 				/* 32-bit write-pointer for the data argument */
@@ -1751,7 +1463,7 @@ void prvTraceStoreSimpleStringEventHelper(uint16_t eventID,
 				uint32_t* data32;
 				uint8_t* data8;
 				event->base.EventID = (eventID) | (uint16_t)PARAM_COUNT(nWords);
-				event->base.EventCount = (uint16_t)TRC_GET_EVENT_COUNT(eventCounter);
+				event->base.EventCount = (uint16_t)eventCounter;
 				event->base.TS = prvGetTimestamp32();
 
 				/* 32-bit write-pointer for the data argument */
@@ -2115,72 +1827,208 @@ static uint32_t prvGetTimestamp32(void)
 #endif
 }
 
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-
-void prvAddTaskToStackMonitor(void* task)
+/* Retrieve a buffer page to write to. */
+static int prvAllocateBufferPage(int prevPage)
 {
-	int i;
-	int foundEmptySlot = 0;
+	int index;
+	int count = 0;
 
-	// find an empty slot
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
+	index = (prevPage + 1) % (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT);
+
+	while((PageInfo[index].Status != PAGE_STATUS_FREE) && (count ++ < (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT)))
 	{
-		if (tasksInStackMonitor[i].tcb == 0)
+		index = (index + 1) % (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT);
+	}
+
+	if (PageInfo[index].Status == PAGE_STATUS_FREE)
+	{
+		return index;
+	}
+
+	return -1;
+}
+
+/* Mark the page read as complete. */
+static void prvPageReadComplete(int pageIndex)
+{
+  	TRACE_ALLOC_CRITICAL_SECTION();
+
+	TRACE_ENTER_CRITICAL_SECTION();
+	PageInfo[pageIndex].BytesRemaining = (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE);
+	PageInfo[pageIndex].WritePointer = &EventBuffer[pageIndex * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE)];
+	PageInfo[pageIndex].Status = PAGE_STATUS_FREE;
+
+	TotalBytesRemaining += (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE);
+
+	TRACE_EXIT_CRITICAL_SECTION();
+}
+
+/* Get the current buffer page index and remaining number of bytes. */
+static int prvGetBufferPage(int32_t* bytesUsed)
+{
+	static int8_t lastPage = -1;
+	int count = 0;
+  	int8_t index = (int8_t) ((lastPage + 1) % (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT));
+
+	while((PageInfo[index].Status != PAGE_STATUS_READ) && (count++ < (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT)))
+	{
+		index = (int8_t)((index + 1) % (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT));
+	}
+
+	if (PageInfo[index].Status == PAGE_STATUS_READ)
+	{
+		*bytesUsed = (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE) - PageInfo[index].BytesRemaining;
+		lastPage = index;
+		return index;
+	}
+
+	*bytesUsed = 0;
+
+	return -1;
+}
+
+/*******************************************************************************
+ * uint32_t prvPagedEventBufferTransfer(void)
+ *
+ * Transfers one buffer page of trace data, if a full page is available, using
+ * the macro TRC_STREAM_PORT_WRITE_DATA as defined in trcStreamingPort.h.
+ *
+ * This function is intended to be called the periodic TzCtrl task with a suitable
+ * delay (e.g. 10-100 ms).
+ *
+ * Returns the number of bytes sent. If non-zero, it is good to call this 
+ * again, in order to send any additional data waiting in the buffer.
+ * If zero, wait a while before calling again.
+ *
+ * In case of errors from the streaming interface, it registers a warning
+ * (PSF_WARNING_STREAM_PORT_WRITE) provided by xTraceGetLastError().
+ *
+ *******************************************************************************/
+uint32_t prvPagedEventBufferTransfer(void)
+{
+	int8_t pageToTransfer = -1;
+    int32_t bytesTransferredTotal = 0;
+	int32_t bytesTransferredNow = 0;
+	int32_t bytesToTransfer;
+
+    pageToTransfer = (int8_t)prvGetBufferPage(&bytesToTransfer);
+
+	/* bytesToTransfer now contains the number of "valid" bytes in the buffer page, that should be transmitted.
+	There might be some unused junk bytes in the end, that must be ignored. */
+    
+    if (pageToTransfer > -1)
+    {
+        while (1)  /* Keep going until we have transferred all that we intended to */
+        {
+			if (TRC_STREAM_PORT_WRITE_DATA(
+					&EventBuffer[pageToTransfer * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE) + bytesTransferredTotal],
+					(uint32_t)(bytesToTransfer - bytesTransferredTotal),
+					&bytesTransferredNow) == 0)
+			{
+				/* Write was successful. Update the number of transferred bytes. */
+				bytesTransferredTotal += bytesTransferredNow;
+
+				if (bytesTransferredTotal == bytesToTransfer)
+				{
+					/* All bytes have been transferred. Mark the buffer page as "Read Complete" (so it can be written to) and return OK. */
+					prvPageReadComplete(pageToTransfer);
+					return (uint32_t)bytesTransferredTotal;
+				}
+			}
+			else
+			{
+				/* Some error from the streaming interface... */
+				vTraceStop();
+				return 0;
+			}
+		}
+	}
+	return 0;
+}
+
+/*******************************************************************************
+ * void* prvPagedEventBufferGetWritePointer(int sizeOfEvent)
+ *
+ * Returns a pointer to an available location in the buffer able to store the
+ * requested size.
+ * 
+ * Return value: The pointer.
+ * 
+ * Parameters:
+ * - sizeOfEvent: The size of the event that is to be placed in the buffer.
+ *
+*******************************************************************************/
+void* prvPagedEventBufferGetWritePointer(int sizeOfEvent)
+{
+	void* ret;
+	static int currentWritePage = -1;
+
+	if (currentWritePage == -1)
+	{
+	    currentWritePage = prvAllocateBufferPage(currentWritePage);
+		if (currentWritePage == -1)
 		{
-			tasksInStackMonitor[i].tcb = task;
-			tasksInStackMonitor[i].uiPreviousLowMark = 0xFFFFFFFF;
-			foundEmptySlot = 1;
-			break;
+		  	DroppedEventCounter++;
+			return NULL;
 		}
 	}
 
-	if (foundEmptySlot == 0)
+    if (PageInfo[currentWritePage].BytesRemaining - sizeOfEvent < 0)
 	{
-		TaskStacksNotIncluded++;
-	}
-}
+		PageInfo[currentWritePage].Status = PAGE_STATUS_READ;
 
-void prvRemoveTaskFromStackMonitor(void* task)
-{
-	int i;
+		TotalBytesRemaining -= PageInfo[currentWritePage].BytesRemaining; // Last trailing bytes
 
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
-	{
-		if (tasksInStackMonitor[i].tcb == task)
+		if (TotalBytesRemaining < TotalBytesRemaining_LowWaterMark)
+		  TotalBytesRemaining_LowWaterMark = TotalBytesRemaining;
+
+		currentWritePage = prvAllocateBufferPage(currentWritePage);
+		if (currentWritePage == -1)
 		{
-			tasksInStackMonitor[i].tcb = NULL;
-			tasksInStackMonitor[i].uiPreviousLowMark = 0;
+		  DroppedEventCounter++;
+		  return NULL;
 		}
 	}
+	ret = PageInfo[currentWritePage].WritePointer;
+	PageInfo[currentWritePage].WritePointer += sizeOfEvent;
+	PageInfo[currentWritePage].BytesRemaining = (uint16_t)(PageInfo[currentWritePage].BytesRemaining -sizeOfEvent);
+
+	TotalBytesRemaining = (TotalBytesRemaining-(uint16_t)sizeOfEvent);
+
+	if (TotalBytesRemaining < TotalBytesRemaining_LowWaterMark)
+		TotalBytesRemaining_LowWaterMark = TotalBytesRemaining;
+
+	return ret;
 }
 
-void prvReportStackUsage()
+/*******************************************************************************
+ * void prvPagedEventBufferInit(char* buffer)
+ *
+ * Assigns the buffer to use and initializes the PageInfo structure.
+ *
+ * Return value: void
+ * 
+ * Parameters:
+ * - char* buffer: pointer to the trace data buffer, allocated by the caller.
+ *
+*******************************************************************************/
+void prvPagedEventBufferInit(char* buffer)
 {
-	static int i = 0;	/* Static index used to loop over the monitored tasks */
-	int count = 0;		/* The number of generated reports */
-	int initial = i;	/* Used to make sure we break if we are back at the inital value */
-
-	do
+  	int i;
+  	TRACE_ALLOC_CRITICAL_SECTION();
+    
+    EventBuffer = buffer;
+    
+	TRACE_ENTER_CRITICAL_SECTION();
+	for (i = 0; i < (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_COUNT); i++)
 	{
-		/* Check the current spot */
-		if (tasksInStackMonitor[i].tcb != NULL)
-		{
-			/* Get the amount of unused stack */
-			uint32_t unusedStackSpace = prvTraceGetStackHighWaterMark(tasksInStackMonitor[i].tcb);
+		PageInfo[i].BytesRemaining = (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE);
+		PageInfo[i].WritePointer = &EventBuffer[i * (TRC_CFG_PAGED_EVENT_BUFFER_PAGE_SIZE)];
+		PageInfo[i].Status = PAGE_STATUS_FREE;
+	}
+	TRACE_EXIT_CRITICAL_SECTION();
 
-			/* Store for later use */
-			if (tasksInStackMonitor[i].uiPreviousLowMark > unusedStackSpace)
-				tasksInStackMonitor[i].uiPreviousLowMark = unusedStackSpace;
-
-			prvTraceStoreEvent2(PSF_EVENT_UNUSED_STACK, (uint32_t)tasksInStackMonitor[i].tcb, tasksInStackMonitor[i].uiPreviousLowMark);
-
-			count++;
-		}
-
-		i = (i + 1) % TRC_CFG_STACK_MONITOR_MAX_TASKS; // Move i beyond this task
-	} while (count < TRC_CFG_STACK_MONITOR_MAX_REPORTS && i != initial);
 }
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
 
 #endif /*(TRC_USE_TRACEALYZER_RECORDER == 1)*/
 

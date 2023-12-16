@@ -1,12 +1,46 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * FreeRTOS-specific definitions needed by the trace recorder
+ *
+ * <LICENSE INFO>
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
  * www.percepio.com
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * FreeRTOS specific definitions needed by the trace recorder
- */
+ ******************************************************************************/
 
 #ifndef TRC_KERNEL_PORT_H
 #define TRC_KERNEL_PORT_H
@@ -39,7 +73,6 @@ extern "C" {
 #define TRC_FREERTOS_VERSION_10_3_0				9
 #define TRC_FREERTOS_VERSION_10_3_1				TRC_FREERTOS_VERSION_10_3_0
 #define TRC_FREERTOS_VERSION_10_4_0				10
-#define TRC_FREERTOS_VERSION_10_4_1				TRC_FREERTOS_VERSION_10_4_0
 
 /* Legacy FreeRTOS version codes for backwards compatibility with old trace configurations */
 #define TRC_FREERTOS_VERSION_7_3				TRC_FREERTOS_VERSION_7_3_X
@@ -70,11 +103,6 @@ extern "C" {
 
 
 #if (defined(TRC_USE_TRACEALYZER_RECORDER)) && (TRC_USE_TRACEALYZER_RECORDER == 1)
-
-#define TRC_PLATFORM_CFG ""
-#define TRC_PLATFORM_CFG_MAJOR 1
-#define TRC_PLATFORM_CFG_MINOR 0
-#define TRC_PLATFORM_CFG_PATCH 0
 
 #if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
 	/* Required for this feature */
@@ -161,9 +189,13 @@ void vTraceSetMessageBufferName(void* object, const char* name);
 #define vTraceSetMessageBufferName(object, name) /* Do nothing */
 #endif /* (TRC_CFG_INCLUDE_STREAM_BUFFER_EVENTS == 1) */
 
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1)
-uint32_t prvTraceGetStackHighWaterMark(void* task);
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1)*/
+#if defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1)
+void prvAddTaskToStackMonitor(void* task);
+void prvRemoveTaskFromStackMonitor(void* task);
+#else /* defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) */
+#define prvAddTaskToStackMonitor(task)
+#define prvRemoveTaskFromStackMonitor(task)
+#endif /* defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) */
 
 #else /* (TRC_CFG_SCHEDULING_ONLY == 0) */
 
@@ -1526,7 +1558,15 @@ extern void vTraceStoreMemMangEvent(uint32_t ecode, uint32_t address, int32_t si
 *
 * Set the name for a kernel object (defined by its address).
 ******************************************************************************/			
-void vTraceStoreKernelObjectName(void* object, const char* name);
+void vTraceStoreKernelObjectName(void* object, const char* name); 
+
+/*******************************************************************************
+* prvIsNewTCB
+*
+* Tells if this task is already executing, or if there has been a task-switch.
+* Assumed to be called within a trace hook in kernel context.
+*******************************************************************************/
+uint32_t prvIsNewTCB(void* pNewTCB);
 
 #define TRACE_GET_CURRENT_TASK() prvTraceGetCurrentTaskHandle()
 
@@ -1782,9 +1822,8 @@ extern volatile uint32_t uiTraceSystemState;
 	uiTraceSystemState = TRC_STATE_IN_TASKSWITCH; \
 	if (TRACE_GET_OBJECT_FILTER(TASK, TRACE_GET_CURRENT_TASK()) & CurrentFilterMask) \
 	{ \
-		if (prvTraceGetCurrentTask() != (uint32_t)pxCurrentTCB) \
+		if (prvIsNewTCB(pxCurrentTCB)) \
 		{ \
-			prvTraceSetCurrentTask((uint32_t)pxCurrentTCB); \
 			prvTraceStoreEvent2(PSF_EVENT_TASK_ACTIVATE, (uint32_t)pxCurrentTCB, pxCurrentTCB->uxPriority); \
 		} \
 	} \
@@ -2345,17 +2384,12 @@ extern volatile uint32_t uiTraceSystemState;
 #if (TRC_CFG_INCLUDE_MEMMANG_EVENTS == 1)
 
 extern uint32_t trcHeapCounter;
-extern uint32_t trcHeapMax;
 
 #undef traceMALLOC
 #define traceMALLOC( pvAddress, uiSize ) \
 	if (pvAddress != 0) \
 	{ \
 		trcHeapCounter += uiSize; \
-		if (trcHeapCounter > trcHeapMax) \
-		{ \
-			trcHeapMax = trcHeapCounter; \
-		} \
 	} \
 	if (TRACE_GET_OBJECT_FILTER(TASK, TRACE_GET_CURRENT_TASK()) & CurrentFilterMask) \
 	{ \

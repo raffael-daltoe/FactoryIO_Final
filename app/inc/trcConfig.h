@@ -61,7 +61,7 @@ extern "C" {
  * TRC_RECORDER_MODE_SNAPSHOT
  * TRC_RECORDER_MODE_STREAMING
  ******************************************************************************/
-#define TRC_CFG_RECORDER_MODE TRC_RECORDER_MODE_SNAPSHOT
+#define TRC_CFG_RECORDER_MODE TRC_RECORDER_MODE_STREAMING
 
 /******************************************************************************
  * TRC_CFG_FREERTOS_VERSION
@@ -88,7 +88,7 @@ extern "C" {
  * TRC_FREERTOS_VERSION_10_4_0				If using FreeRTOS v10.4.0
  * TRC_FREERTOS_VERSION_10_4_1				If using FreeRTOS v10.4.1 or later
  *****************************************************************************/
-#define TRC_CFG_FREERTOS_VERSION TRC_FREERTOS_VERSION_10_4_1
+#define TRC_CFG_FREERTOS_VERSION TRC_FREERTOS_VERSION_10_2_1  
 
 /*******************************************************************************
  * TRC_CFG_SCHEDULING_ONLY

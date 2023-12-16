@@ -12,13 +12,16 @@ app/src/main.o: ../app/src/main.c \
  C:/Users/Raffael/Downloads/TP3/app/inc/main.h \
  C:/Users/Raffael/Downloads/TP3/app/inc/events.h \
  C:/Users/Raffael/Downloads/TP3/app/inc/FreeRTOSConfig.h \
- C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcRecorder.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcRecorder.h \
  C:/Users/Raffael/Downloads/TP3/app/inc/trcConfig.h \
- C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcPortDefines.h \
- C:/Users/Raffael/Downloads/TP3/app/inc/trcSnapshotConfig.h \
- C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcPortDefines.h \
- C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcHardwarePort.h \
- C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcKernelPort.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcPortDefines.h \
+ C:/Users/Raffael/Downloads/TP3/app/inc/trcStreamingConfig.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcPortDefines.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcHardwarePort.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/trcStreamingPort.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/SEGGER_RTT_Conf.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/SEGGER_RTT.h \
+ C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcKernelPort.h \
  C:/Users/Raffael/Downloads/TP3/FreeRTOS/include/FreeRTOS.h \
  C:/Users/Raffael/Downloads/TP3/app/inc/FreeRTOSConfig.h \
  C:/Users/Raffael/Downloads/TP3/FreeRTOS/include/projdefs.h \
@@ -48,13 +51,16 @@ C:/Users/Raffael/Downloads/TP3/bsp/inc/factory_io.h:
 C:/Users/Raffael/Downloads/TP3/app/inc/main.h:
 C:/Users/Raffael/Downloads/TP3/app/inc/events.h:
 C:/Users/Raffael/Downloads/TP3/app/inc/FreeRTOSConfig.h:
-C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcRecorder.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcRecorder.h:
 C:/Users/Raffael/Downloads/TP3/app/inc/trcConfig.h:
-C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcPortDefines.h:
-C:/Users/Raffael/Downloads/TP3/app/inc/trcSnapshotConfig.h:
-C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcPortDefines.h:
-C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcHardwarePort.h:
-C:/Users/Raffael/Downloads/TP3/TraceRecorder/Include/trcKernelPort.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcPortDefines.h:
+C:/Users/Raffael/Downloads/TP3/app/inc/trcStreamingConfig.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcPortDefines.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcHardwarePort.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/trcStreamingPort.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/SEGGER_RTT_Conf.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/streamports/Jlink_RTT/include/SEGGER_RTT.h:
+C:/Users/Raffael/Downloads/TP3/TraceRecorder/include/trcKernelPort.h:
 C:/Users/Raffael/Downloads/TP3/FreeRTOS/include/FreeRTOS.h:
 C:/Users/Raffael/Downloads/TP3/app/inc/FreeRTOSConfig.h:
 C:/Users/Raffael/Downloads/TP3/FreeRTOS/include/projdefs.h:

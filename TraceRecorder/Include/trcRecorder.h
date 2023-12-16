@@ -1,12 +1,46 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
- * www.percepio.com
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
  *
- * SPDX-License-Identifier: Apache-2.0
+ * trcRecorder.h
  *
  * The public API of the trace recorder.
- */
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you. 
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
+ * www.percepio.com
+ ******************************************************************************/
 
 #ifndef TRC_RECORDER_H
 #define TRC_RECORDER_H
@@ -23,8 +57,6 @@ extern "C" {
 
 #include "trcConfig.h"
 #include "trcPortDefines.h"
-
-typedef uint32_t traceResult;
 
 #if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT)
 
@@ -549,28 +581,6 @@ void vTraceSetFilterGroup(uint16_t filterGroup);
 ******************************************************************************/
 void vTraceSetFilterMask(uint16_t filterMask);
 
-/******************************************************************************
-* vTraceInitialize
-*
-* Initializes the recorder data.
-* This function will be called by vTraceEnable(...).
-* Only needs to be called manually if traced objects are created before the
-* trace recorder can be enabled, at which point make sure to call this function
-* as early as possible.
-* See TRC_CFG_RECORDER_DATA_INIT in trcConfig.h.
-******************************************************************************/
-void vTraceInitialize(void);
-
-#if defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1)
-void prvAddTaskToStackMonitor(void* task);
-void prvRemoveTaskFromStackMonitor(void* task);
-void prvReportStackUsage(void);
-#else /* defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) */
-#define prvAddTaskToStackMonitor(task)
-#define prvRemoveTaskFromStackMonitor(task)
-#define prvReportStackUsage()
-#endif /* defined (TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) */
-
 #if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT)
 
 /******************************************************************************/
@@ -907,14 +917,6 @@ void prvTraceStoreObjectNameOnCloseEvent(uint8_t evtcode, traceHandle handle,
 void prvTraceStoreObjectPropertiesOnCloseEvent(uint8_t evtcode, traceHandle handle,
 											 traceObjectClass objectclass);
 
-/*******************************************************************************
-* prvTraceInitTimestamps
-*
-* This will only be called once the recorder is started, and we can assume that
-* all hardware has been initialized.
-******************************************************************************/
-void prvTraceInitTimestamps(void);
-
 /* Internal constants for task state */
 #define TASK_STATE_INSTANCE_NOT_ACTIVE 0
 #define TASK_STATE_INSTANCE_ACTIVE 1
@@ -1239,7 +1241,7 @@ typedef struct
 	uint8_t dataBuffer[(TRC_CFG_SEPARATE_USER_EVENT_BUFFER_SIZE) * 4]; /* 4 bytes per slot */
 
 } UserEventBuffer;
-#endif /* (TRC_CFG_USE_SEPARATE_USER_EVENT_BUFFER == 1) */
+#endif
 
 /*******************************************************************************
  * The main data structure, read by Tracealyzer from the RAM dump
@@ -1263,7 +1265,7 @@ typedef struct
 	/* Used to determine Kernel and Endianess */
 	uint16_t version;
 
-	/* Currently 7 */
+	/* Currently 5 */
 	uint8_t minor_version;
 
 	/* This should be 0 if lower IRQ priority values implies higher priority
@@ -1308,10 +1310,10 @@ typedef struct
 	context in between. */ 
 	uint32_t isrTailchainingThreshold;
 
-	/* The maximum amount of heap memory that was allocated */
-	uint32_t heapMemMaxUsage;
+	/* Not used, remains for compatibility and future use */
+	uint8_t notused[24];
 
-	/* The amount of heap memory used */
+	/* The amount of heap memory remaining at the last malloc or free event */
 	uint32_t heapMemUsage;
 
 	/* 0xF0F0F0F0 - for control only */
@@ -1521,8 +1523,8 @@ if (!(eval)) \
 	do { _ptrData = (_type*)prvPagedEventBufferGetWritePointer(_size); } while (_ptrData == NULL);
 
 #else
-	#define TRC_STREAM_PORT_ALLOCATE_EVENT(_type, _ptrData, _size) _type *_ptrData = (_type*)&xEventDataDummy;
-	#define TRC_STREAM_PORT_ALLOCATE_EVENT_BLOCKING(_type, _ptrData, _size) _type *_ptrData = (_type*)&xEventDataDummy;
+	#define TRC_STREAM_PORT_ALLOCATE_EVENT(_type, _ptrData, _size) _type _tmpArray[_size / sizeof(_type)]; _type* _ptrData = _tmpArray;
+	#define TRC_STREAM_PORT_ALLOCATE_EVENT_BLOCKING(_type, _ptrData, _size) _type _tmpArray[_size / sizeof(_type)]; _type* _ptrData = _tmpArray;
 #endif
 #endif
 
@@ -1749,10 +1751,6 @@ if (!(eval)) \
 			prvPagedEventBufferInit(_TzTraceData);
 #endif
 
-#ifndef TRC_STREAM_PORT_INTERNAL_BUFFER_INIT
-	#define TRC_STREAM_PORT_INTERNAL_BUFFER_INIT() prvPagedEventBufferInit(_TzTraceData);
-#endif
-
 
 /* Signal an error. */
 void prvTraceError(int errCode);
@@ -1800,30 +1798,6 @@ void prvTraceSaveObjectData(const void *address, uint32_t data);
 /* Removes an object data entry (task base priority) from object data table */
 void prvTraceDeleteObjectData(void *address);
 
-/* Gets the most recent tcb address */
-uint32_t prvTraceGetCurrentTask(void);
-
-/* Sets the most recent tcb address */
-void prvTraceSetCurrentTask(uint32_t tcb);
-
-/* Begins an event with defined specified payload size. Must call prvTraceEndStoreEvent() to finalize event creation. */
-uint32_t prvTraceBeginStoreEvent(uint32_t uiEventCode, uint32_t uiTotalPayloadSize);
-
-/* Ends the event that was begun by calling on prvTraceBeginStoreEvent() */
-uint32_t prvTraceEndStoreEvent();
-
-/* Adds data of size uiSize as event payload */
-uint32_t prvTraceStoreEventPayload(void *pvData, uint32_t uiSize);
-
-/* Adds an uint32_t as event payload */
-uint32_t prvTraceStoreEventPayload32(uint32_t value);
-
-/* Adds an uint16_t as event payload */
-uint32_t prvTraceStoreEventPayload16(uint16_t value);
-
-/* Adds an uint8_t as event payload */
-uint32_t prvTraceStoreEventPayload8(uint8_t value);
-
 /* Store an event with zero parameters (event ID only) */
 void prvTraceStoreEvent0(uint16_t eventID);
 
@@ -1848,6 +1822,15 @@ void prvTraceStoreEvent(int nParam, uint16_t EventID, ...);
 /* Stories an event with a string and <nParam> 32-bit integer parameters */
 void prvTraceStoreStringEvent(int nArgs, uint16_t eventID, const char* str, ...);
 
+/* Initializes the paged event buffer used by certain stream ports */
+void prvPagedEventBufferInit(char* buffer);
+
+/* Retrieve a pointer to the paged event buffer */
+void* prvPagedEventBufferGetWritePointer(int sizeOfEvent);
+
+/* Transfer a full buffer page */
+uint32_t prvPagedEventBufferTransfer(void);
+
 /* The data structure for commands (a bit overkill) */
 typedef struct
 {
@@ -1867,10 +1850,7 @@ int prvIsValidCommand(TracealyzerCommandType* cmd);
 /* Executed the received command (Start or Stop) */
 void prvProcessCommand(TracealyzerCommandType* cmd);
 
-
 #define vTraceSetStopHook(x) (void)(x)
-
-#define vTraceInitTimestamps() 
 
 #endif /*(TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)*/
 

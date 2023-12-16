@@ -1,18 +1,49 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
- * www.percepio.com
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
  *
- * SPDX-License-Identifier: Apache-2.0
+ * trcPortDefines.h
  *
  * Some common defines for the trace recorder.
- */
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
+ * www.percepio.com
+ ******************************************************************************/
 
 #ifndef TRC_PORTDEFINES_H
 #define TRC_PORTDEFINES_H
-
-#define TRACE_SUCCESS (0)
-#define TRACE_FAIL (1)
 
 #define TRC_FREE_RUNNING_32BIT_INCR 1
 #define TRC_FREE_RUNNING_32BIT_DECR 2
@@ -104,7 +135,4 @@
 #define TRC_HARDWARE_PORT_ARM_CORTEX_A9					16	/*	Yes			Any					*/
 #define TRC_HARDWARE_PORT_POWERPC_Z4                    17  /*  No          FreeRTOS            */
 #define TRC_HARDWARE_PORT_Altera_NiosII					18  /*  Yes          Any (Tested with FreeRTOS)                 */
-#define TRC_HARDWARE_PORT_ZEPHYR                        19  /*  Yes         Zephyr              */
-#define TRC_HARDWARE_PORT_XTensa_LX6                    20  /*  Yes         ESP-IDF FreeRTOS    */
-#define TRC_HARDWARE_PORT_XTensa_LX7                    21  /*  Yes         ESP-IDF FreeRTOS    */
 #endif /*TRC_PORTDEFINES_H*/

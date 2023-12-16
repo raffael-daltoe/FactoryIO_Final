@@ -1,12 +1,46 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
- * www.percepio.com
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
  *
- * SPDX-License-Identifier: Apache-2.0
+ * trcHardwarePort.h
  *
  * The hardware abstraction layer for the trace recorder.
- */
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
+ * www.percepio.com
+ ******************************************************************************/
 
 #ifndef TRC_HARDWARE_PORT_H
 #define TRC_HARDWARE_PORT_H
@@ -93,9 +127,6 @@
 
 #if (TRC_CFG_HARDWARE_PORT == TRC_HARDWARE_PORT_Win32)
 	/* This can be used as a template for any free-running 32-bit counter */
-	unsigned long ulGetRunTimeCounterValue(void);
-
-
 	#define TRC_HWTC_TYPE TRC_FREE_RUNNING_32BIT_INCR
 	#define TRC_HWTC_COUNT (ulGetRunTimeCounterValue())
 	#define TRC_HWTC_PERIOD 0
@@ -433,57 +464,6 @@
 	}
 	#else
 		#error "Only GCC Supported!"
-	#endif
-
-#elif (TRC_CFG_HARDWARE_PORT == TRC_HARDWARE_PORT_ZEPHYR)
-	#define TRC_HWTC_TYPE TRC_FREE_RUNNING_32BIT_INCR
-	#define TRC_HWTC_COUNT k_cycle_get_32()
-	#define TRC_HWTC_PERIOD (CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC / CONFIG_SYS_CLOCK_TICKS_PER_SEC)
-	#define TRC_HWTC_DIVISOR 4
-	#define TRC_HWTC_FREQ_HZ CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
-	#define TRC_IRQ_PRIORITY_ORDER 0 // Lower IRQ priority values are more significant
-
-	#define TRC_PORT_SPECIFIC_INIT()
-
-#elif ((TRC_CFG_HARDWARE_PORT == TRC_HARDWARE_PORT_XTensa_LX6) || (TRC_CFG_HARDWARE_PORT == TRC_HARDWARE_PORT_XTensa_LX7))
-	/**
-	 * @note	When running with SMP FreeRTOS we cannot use the CCOUNT register for timestamping,
-	 * 			instead we use the external 40MHz timer for synchronized timestamping between the cores.
-	 */
-	#if CONFIG_FREERTOS_UNICORE == 1
-		#define TRC_HWTC_TYPE TRC_FREE_RUNNING_32BIT_INCR
-		#define TRC_HWTC_COUNT ({ unsigned int __ccount; 			\
-			__asm__ __volatile__("rsr.ccount %0" : "=a"(__ccount)); \
-			__ccount; })
-#ifdef CONFIG_IDF_TARGET_ESP32
-		#define TRC_HWTC_FREQ_HZ (CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ * 1000000)
-#elif defined(CONFIG_IDF_TARGET_ESP32S2)
-		#define TRC_HWTC_FREQ_HZ (CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ * 1000000)
-#else
-		#error "Invalid IDF target, check your sdkconfig."
-#endif
-		#define TRC_HWTC_PERIOD 0
-		#define TRC_HWTC_DIVISOR 4
-		#define TRC_IRQ_PRIORITY_ORDER 0
-	#else
-		/**
-		 * @brief 	Fetch core agnostic timestamp using the external 40MHz timer. This is used by tracerecorder
-		 * 			when running with both cores.
-		 *
-		 * @return 	Ticks since the timer started
-		 */
-		uint32_t prvGetSMPTimestamp();
-
-		#define TRC_HWTC_TYPE TRC_FREE_RUNNING_32BIT_INCR
-		#define TRC_HWTC_COUNT prvGetSMPTimestamp()
-		#define TRC_HWTC_FREQ_HZ 40000000
-		#define TRC_HWTC_PERIOD 0
-		#define TRC_HWTC_DIVISOR 4
-		#define TRC_IRQ_PRIORITY_ORDER 0
-	#endif
-
-	#if !defined(TRC_HWTC_FREQ_HZ)
-		#error "The XTensa LX6/LX7 trace hardware clock frequency is not defined."
 	#endif
 
 

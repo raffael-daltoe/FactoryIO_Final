@@ -1,5 +1,5 @@
-../FreeRTOS/list.c:48:6:vListInitialise	0	static
-../FreeRTOS/list.c:73:6:vListInitialiseItem	0	static
-../FreeRTOS/list.c:85:6:vListInsertEnd	0	static
-../FreeRTOS/list.c:115:6:vListInsert	12	static
-../FreeRTOS/list.c:183:13:uxListRemove	0	static
+../FreeRTOS/list.c:37:6:vListInitialise	0	static
+../FreeRTOS/list.c:62:6:vListInitialiseItem	0	static
+../FreeRTOS/list.c:74:6:vListInsertEnd	0	static
+../FreeRTOS/list.c:103:6:vListInsert	12	static
+../FreeRTOS/list.c:170:13:uxListRemove	0	static

@@ -1,12 +1,46 @@
-/*
- * Trace Recorder for Tracealyzer v4.5.0
- * Copyright 2021 Percepio AB
- * www.percepio.com
+/*******************************************************************************
+ * Trace Recorder Library for Tracealyzer v4.3.11
+ * Percepio AB, www.percepio.com
  *
- * SPDX-License-Identifier: Apache-2.0
+ * trcSnapshotRecorder.c
  *
  * The generic core of the trace recorder's snapshot mode.
- */
+ *
+ * Terms of Use
+ * This file is part of the trace recorder library (RECORDER), which is the 
+ * intellectual property of Percepio AB (PERCEPIO) and provided under a
+ * license as follows.
+ * The RECORDER may be used free of charge for the purpose of recording data
+ * intended for analysis in PERCEPIO products. It may not be used or modified
+ * for other purposes without explicit permission from PERCEPIO.
+ * You may distribute the RECORDER in its original source code form, assuming
+ * this text (terms of use, disclaimer, copyright notice) is unchanged. You are
+ * allowed to distribute the RECORDER with minor modifications intended for
+ * configuration or porting of the RECORDER, e.g., to allow using it on a 
+ * specific processor, processor family or with a specific communication
+ * interface. Any such modifications should be documented directly below
+ * this comment block.  
+ *
+ * Disclaimer
+ * The RECORDER is being delivered to you AS IS and PERCEPIO makes no warranty
+ * as to its use or performance. PERCEPIO does not and cannot warrant the 
+ * performance or results you may obtain by using the RECORDER or documentation.
+ * PERCEPIO make no warranties, express or implied, as to noninfringement of
+ * third party rights, merchantability, or fitness for any particular purpose.
+ * In no event will PERCEPIO, its technology partners, or distributors be liable
+ * to you for any consequential, incidental or special damages, including any
+ * lost profits or lost savings, even if a representative of PERCEPIO has been
+ * advised of the possibility of such damages, or for any claim by any third
+ * party. Some jurisdictions do not allow the exclusion or limitation of
+ * incidental, consequential or special damages, or the exclusion of implied
+ * warranties or limitations on how long an implied warranty may last, so the
+ * above limitations may not apply to you.
+ *
+ * Tabs are used for indent in this file (1 tab = 4 spaces)
+ *
+ * Copyright Percepio AB, 2018.
+ * www.percepio.com
+ ******************************************************************************/
 
 #include "trcRecorder.h"
 
@@ -18,46 +52,17 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#ifndef TRC_CFG_RECORDER_DATA_INIT
-#define TRC_CFG_RECORDER_DATA_INIT 1
-#endif
-
 #if ((TRC_HWTC_TYPE == TRC_CUSTOM_TIMER_INCR) || (TRC_HWTC_TYPE == TRC_CUSTOM_TIMER_DECR))
 	#error "CUSTOM timestamping mode is not (yet) supported in snapshot mode!"
 #endif
 
 /* DO NOT CHANGE */
-#define TRACE_MINOR_VERSION 7
-
-/* Keeps track of the task's stack low mark */
-typedef struct {
-	void* tcb;
-	uint32_t uiPreviousLowMark;
-} TaskStackMonitorEntry_t;
-
+#define TRACE_MINOR_VERSION 5
 #if (TRC_CFG_INCLUDE_ISR_TRACING == 1)
-/*******************************************************************************
-* isrstack
-*
-* Keeps track of nested interrupts.
-******************************************************************************/
 static traceHandle isrstack[TRC_CFG_MAX_ISR_NESTING];
-
-/*******************************************************************************
-* isPendingContextSwitch
-*
-* Used to indicate if there is a pending context switch.
-* If there is a pending context switch the recorder will not create an event
-* when returning from the ISR.
-******************************************************************************/
 int32_t isPendingContextSwitch = 0;
 #endif /* (TRC_CFG_INCLUDE_ISR_TRACING == 1) */
 
-/*******************************************************************************
-* readyEventsEnabled
-*
-* This can be used to dynamically disable ready events.
-******************************************************************************/
 #if !defined TRC_CFG_INCLUDE_READY_EVENTS || TRC_CFG_INCLUDE_READY_EVENTS == 1
 static int readyEventsEnabled = 1;
 #endif /*!defined TRC_CFG_INCLUDE_READY_EVENTS || TRC_CFG_INCLUDE_READY_EVENTS == 1*/
@@ -72,156 +77,36 @@ static int readyEventsEnabled = 1;
  ******************************************************************************/
 uint32_t uiTraceTickCount = 0;
 
-/*******************************************************************************
-* trace_disable_timestamp
-*
-* This can be used to disable timestamps as it will cause
-* prvTracePortGetTimeStamp() to return the previous timestamp.
-******************************************************************************/
 uint32_t trace_disable_timestamp = 0;
 
-/*******************************************************************************
-* last_timestamp
-*
-* The most recent timestamp.
-******************************************************************************/
 static uint32_t last_timestamp = 0;
 
-/*******************************************************************************
-* uiTraceSystemState
-*
-* Indicates if we are currently performing a context switch or just running application code.
-******************************************************************************/
+/* Indicates if we are currently performing a context switch or just running application code */
 volatile uint32_t uiTraceSystemState = TRC_STATE_IN_STARTUP;
 
-/*******************************************************************************
-* recorder_busy
-*
-* Flag that shows if inside a critical section of the recorder.
-******************************************************************************/
+/* Flag that shows if inside a critical section of the recorder */
 volatile int recorder_busy = 0;
 
-/*******************************************************************************
-* timestampFrequency
-*
-* Holds the value set by vTraceSetFrequency.
-******************************************************************************/
+/* Holds the value set by vTraceSetFrequency */
 uint32_t timestampFrequency = 0;
 
-/*******************************************************************************
-* nISRactive
-*
-* The number of currently active (including preempted) ISRs.
-******************************************************************************/
+/* The last error message of the recorder. NULL if no error message. */
+const char* traceErrorMessage = NULL;
+
 int8_t nISRactive = 0;
 
-/*******************************************************************************
-* handle_of_last_logged_task
-*
-* The current task.
-******************************************************************************/
 traceHandle handle_of_last_logged_task = 0;
 
-/*******************************************************************************
-* vTraceStopHookPtr
-*
-* Called when the recorder is stopped, set by vTraceSetStopHook.
-******************************************************************************/
+/* Called when the recorder is stopped, set by vTraceSetStopHook. */
 TRACE_STOP_HOOK vTraceStopHookPtr = (TRACE_STOP_HOOK)0;
 
-/*******************************************************************************
-* init_hwtc_count
-*
-* Initial TRC_HWTC_COUNT value, for detecting if the time-stamping source is
-* enabled. If using the OS periodic timer for time-stamping, this might not
-* have been configured on the earliest events during the startup.
-******************************************************************************/
-uint32_t init_hwtc_count;
+uint16_t CurrentFilterMask = 0xFFFF;
 
-/*******************************************************************************
-* CurrentFilterMask
-*
-* The filter mask that will be checked against each object's FilterGroup to see
-* if they should be included in the trace or not.
-******************************************************************************/
-uint16_t CurrentFilterMask TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+uint16_t CurrentFilterGroup = FilterGroup0;
 
-/*******************************************************************************
-* CurrentFilterGroup
-*
-* The current filter group that will be assigned to newly created objects.
-******************************************************************************/
-uint16_t CurrentFilterGroup TRC_CFG_RECORDER_DATA_ATTRIBUTE;
+extern int8_t nISRactive;
 
-/*******************************************************************************
-* objectHandleStacks
-*
-* A set of stacks that keeps track of available object handles for each class.
-* The stacks are empty initially, meaning that allocation of new handles will be
-* based on a counter (for each object class). Any delete operation will
-* return the handle to the corresponding stack, for reuse on the next allocate.
-******************************************************************************/
-objectHandleStackType objectHandleStacks TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/*******************************************************************************
-* traceErrorMessage
-*
-* The last error message of the recorder. NULL if no error message.
-******************************************************************************/
-const char* traceErrorMessage TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-/*******************************************************************************
-* tasksInStackMonitor
-*
-* Keeps track of all stack low marks for tasks.
-******************************************************************************/
-TaskStackMonitorEntry_t tasksInStackMonitor[TRC_CFG_STACK_MONITOR_MAX_TASKS] TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/*******************************************************************************
-* tasksNotIncluded
-*
-* The number of tasks that didn't fit in the stack monitor.
-******************************************************************************/
-int tasksNotIncluded TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
-/*******************************************************************************
-* RecorderData
-*
-* The main data structure in snapshot mode, when using the default static memory
-* allocation (TRC_RECORDER_BUFFER_ALLOCATION_STATIC). The recorder uses a pointer
-* RecorderDataPtr to access the data, to also allow for dynamic or custom data
-* allocation (see TRC_CFG_RECORDER_BUFFER_ALLOCATION).
-******************************************************************************/
-#if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_STATIC)
-RecorderDataType RecorderData TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-#endif
-
-/*******************************************************************************
-* RecorderDataPtr
-*
-* Pointer to the main data structure, when in snapshot mode.
-******************************************************************************/
-RecorderDataType* RecorderDataPtr TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-
-/*******************************************************************************
-* RecorderInitialized
-*
-* Makes sure the recorder data is only initialized once.
-*
-* NOTE: RecorderInitialized is only initialized to 0 if 
-* TRC_CFG_RECORDER_DATA_INIT is non-zero.
-* This will avoid issues where the recorder must be started before main(),
-* which can lead to RecorderInitialized be cleared by late initialization after
-* vTraceEnable(TRC_INIT) was called and assigned RecorderInitialized its'
-* value.
-******************************************************************************/
-#if (TRC_CFG_RECORDER_DATA_INIT != 0)
-uint32_t RecorderInitialized = 0;
-#else /* (TRC_CFG_RECORDER_DATA_INIT != 0) */
-uint32_t RecorderInitialized TRC_CFG_RECORDER_DATA_ATTRIBUTE;
-#endif /* (TRC_CFG_RECORDER_DATA_INIT != 0) */
+extern traceHandle handle_of_last_logged_task;
 
 /*************** Private Functions *******************************************/
 static void prvStrncpy(char* dst, const char* src, uint32_t maxLength);
@@ -259,6 +144,11 @@ void prvTraceDecreaseISRActive(void);
 static uint8_t prvTraceGet8BitHandle(traceHandle handle);
 #else
 #define prvTraceGet8BitHandle(x) ((uint8_t)x)
+#endif
+
+
+#if (TRC_CFG_INCLUDE_MEMMANG_EVENTS == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
+static uint32_t heapMemUsage = 0;
 #endif
 
 #if (TRC_CFG_SCHEDULING_ONLY == 0)
@@ -504,19 +394,6 @@ void* xTraceGetTraceBuffer(void)
 uint32_t uiTraceGetTraceBufferSize(void)
 {
 	return sizeof(RecorderDataType);
-}
-
-/*******************************************************************************
-* prvTraceInitTimestamps
-*
-* If vTraceEnable(TRC_INIT) was called BEFORE the clock was initialized, this
-* function must be called AFTER the clock is initialized to set a proper
-* initial timestamp value. If vTraceEnable(...) is only called AFTER clock is
-* initialized, there is no need to call this function.
-******************************************************************************/
-void prvTraceInitTimestamps(void)
-{
-	init_hwtc_count = TRC_HWTC_COUNT;
 }
 
 /******************************************************************************
@@ -778,7 +655,7 @@ void vTraceStoreISREnd(int pendingISR)
 	}
 
 	trcCRITICAL_SECTION_BEGIN();
-	isPendingContextSwitch |= pendingISR;	/* Is there a pending context switch right now? If so, we will not create an event since we will get an event when that context switch is executed. */
+	isPendingContextSwitch |= pendingISR;	/* Is there a pending context switch right now? */
 	nISRactive--;
 	if (nISRactive > 0)
 	{
@@ -1618,147 +1495,6 @@ traceString xTraceRegisterString(const char* label)
 }
 #endif
 
-/******************************************************************************
-* vTraceInitialize
-*
-* Initializes the recorder data.
-* This function will be called by vTraceEnable(...).
-* Only needs to be called manually if traced objects are created before the
-* trace recorder can be enabled
-* See TRC_CFG_RECORDER_DATA_INIT in trcConfig.h for more information.
-******************************************************************************/
-void vTraceInitialize()
-{
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	uint32_t i;
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
-	if (RecorderInitialized != 0)
-	{
-		return;
-	}
-
-	/* These are set on init so they aren't overwritten by late initialization values. */
-	CurrentFilterMask = 0xFFFF;
-	CurrentFilterGroup = FilterGroup0;
-	traceErrorMessage = 0;
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-	tasksNotIncluded = 0;
-
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
-	{
-		tasksInStackMonitor[i].tcb = 0;
-		tasksInStackMonitor[i].uiPreviousLowMark = 0;
-	}
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
-#if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_STATIC)
-	RecorderDataPtr = &RecorderData;
-#elif (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_DYNAMIC)
-	RecorderDataPtr = (RecorderDataType*)TRACE_MALLOC(sizeof(RecorderDataType));
-	if (!RecorderDataPtr)
-	{
-		prvTraceError("Failed allocating recorder buffer!");
-		return;
-	}
-#elif (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_CUSTOM)
-	if (!RecorderDataPtr)
-	{
-		prvTraceError("Recorder data pointer not set! Use vTraceSetRecorderDataBuffer().");
-		return;
-	}
-#endif
-
-	init_hwtc_count = TRC_HWTC_COUNT;
-
-	(void)memset(RecorderDataPtr, 0, sizeof(RecorderDataType));
-
-	RecorderDataPtr->version = TRACE_KERNEL_VERSION;
-	RecorderDataPtr->minor_version = TRACE_MINOR_VERSION;
-	RecorderDataPtr->irq_priority_order = TRC_IRQ_PRIORITY_ORDER;
-	RecorderDataPtr->filesize = sizeof(RecorderDataType);
-	RecorderDataPtr->maxEvents = (TRC_CFG_EVENT_BUFFER_SIZE);
-	RecorderDataPtr->debugMarker0 = (int32_t)0xF0F0F0F0;
-	RecorderDataPtr->isUsing16bitHandles = TRC_CFG_USE_16BIT_OBJECT_HANDLES;
-	RecorderDataPtr->isrTailchainingThreshold = TRC_CFG_ISR_TAILCHAINING_THRESHOLD;
-
-	/* This function is kernel specific */
-	vTraceInitObjectPropertyTable();
-
-	RecorderDataPtr->debugMarker1 = (int32_t)0xF1F1F1F1;
-	RecorderDataPtr->SymbolTable.symTableSize = (TRC_CFG_SYMBOL_TABLE_SIZE);
-	RecorderDataPtr->SymbolTable.nextFreeSymbolIndex = 1;
-#if (TRC_CFG_INCLUDE_FLOAT_SUPPORT == 1)
-	RecorderDataPtr->exampleFloatEncoding = 1.0f; /* otherwise already zero */
-#endif
-	RecorderDataPtr->debugMarker2 = (int32_t)0xF2F2F2F2;
-	prvStrncpy(RecorderDataPtr->systemInfo, "Trace Recorder Demo", 80);
-	RecorderDataPtr->debugMarker3 = (int32_t)0xF3F3F3F3;
-	RecorderDataPtr->endmarker0 = 0x0A;
-	RecorderDataPtr->endmarker1 = 0x0B;
-	RecorderDataPtr->endmarker2 = 0x0C;
-	RecorderDataPtr->endmarker3 = 0x0D;
-	RecorderDataPtr->endmarker4 = 0x71;
-	RecorderDataPtr->endmarker5 = 0x72;
-	RecorderDataPtr->endmarker6 = 0x73;
-	RecorderDataPtr->endmarker7 = 0x74;
-	RecorderDataPtr->endmarker8 = 0xF1;
-	RecorderDataPtr->endmarker9 = 0xF2;
-	RecorderDataPtr->endmarker10 = 0xF3;
-	RecorderDataPtr->endmarker11 = 0xF4;
-
-#if TRC_CFG_USE_SEPARATE_USER_EVENT_BUFFER
-	RecorderDataPtr->userEventBuffer.bufferID = 1;
-	RecorderDataPtr->userEventBuffer.version = 0;
-	RecorderDataPtr->userEventBuffer.numberOfSlots = (TRC_CFG_SEPARATE_USER_EVENT_BUFFER_SIZE);
-	RecorderDataPtr->userEventBuffer.numberOfChannels = (TRC_CFG_UB_CHANNELS)+1;
-#endif
-
-	/* Kernel specific initialization of the objectHandleStacks variable */
-	vTraceInitObjectHandleStack();
-
-
-	/* Finally, the 12-byte "start markers" are initialized, allowing for
-	Tracealyzer to find the trace data in a larger RAM dump.
-
-	The start and end markers must be unique, but without proper precautions there
-	might be a risk of accidental duplicates of the start/end markers, e.g., due to
-	compiler optimizations.
-
-	The below initialization of the start marker is therefore made in reverse order
-	and the fields are volatile to ensure this assignment order. This to avoid any
-	chance of accidental duplicates of this elsewhere in memory.
-
-	Moreover, the fields are set byte-by-byte to avoid endian issues.*/
-
-	RecorderDataPtr->startmarker11 = 0xF4;
-	RecorderDataPtr->startmarker10 = 0xF3;
-	RecorderDataPtr->startmarker9 = 0xF2;
-	RecorderDataPtr->startmarker8 = 0xF1;
-	RecorderDataPtr->startmarker7 = 0x74;
-	RecorderDataPtr->startmarker6 = 0x73;
-	RecorderDataPtr->startmarker5 = 0x72;
-	RecorderDataPtr->startmarker4 = 0x71;
-	RecorderDataPtr->startmarker3 = 0x04;
-	RecorderDataPtr->startmarker2 = 0x03;
-	RecorderDataPtr->startmarker1 = 0x02;
-	RecorderDataPtr->startmarker0 = 0x01;
-
-	if (traceErrorMessage != NULL)
-	{
-		// An error was detected before vTraceEnable was called, make sure this is stored in the trace data.
-		prvStrncpy(RecorderDataPtr->systemInfo, traceErrorMessage, 80);
-		RecorderDataPtr->internalErrorOccured = 1;
-		vTraceStop();
-	}
-
-#ifdef TRC_PORT_SPECIFIC_INIT
-	TRC_PORT_SPECIFIC_INIT();
-#endif
-
-	RecorderInitialized = 1;
-}
 
 #if ((!defined TRC_CFG_INCLUDE_READY_EVENTS) || (TRC_CFG_INCLUDE_READY_EVENTS == 1))
 
@@ -1912,15 +1648,8 @@ void vTraceStoreMemMangEvent(uint32_t ecode, uint32_t address, int32_t signed_si
 	
 	/* Only update heapMemUsage if we have a valid address */
 	if (address != 0)
-	{
-		RecorderDataPtr->heapMemUsage += (uint32_t)signed_size;
-
-		if (RecorderDataPtr->heapMemUsage > RecorderDataPtr->heapMemMaxUsage)
-		{
-			RecorderDataPtr->heapMemMaxUsage = RecorderDataPtr->heapMemUsage;
-		}
-	}
-
+		heapMemUsage += (uint32_t)signed_size;
+	
 	if (RecorderDataPtr->recorderActive)
 	{
 		dts1 = (uint8_t)prvTraceGetDTS(0xFF);
@@ -1953,9 +1682,10 @@ void vTraceStoreMemMangEvent(uint32_t ecode, uint32_t address, int32_t signed_si
 			{
 				ma->addr_low = addr_low;
 				ma->addr_high = addr_high;
-				ma->type = (uint8_t) (ecode  + 1);	/* Note this! */
-				ms->type = (uint8_t) ecode;			/* Set type of first event */
-				prvTraceUpdateCounters();
+				ma->type = (uint8_t) (ecode  + 1); /* Note this! */
+				ms->type = (uint8_t) ecode;
+				prvTraceUpdateCounters();					
+				RecorderDataPtr->heapMemUsage = heapMemUsage;
 			}
 		}
 	}
@@ -2343,6 +2073,163 @@ void prvTraceSetTaskInstanceFinished(traceHandle handle)
 #endif
 }
 
+/*******************************************************************************
+ * Static data initializations
+ ******************************************************************************/
+
+/* A set of stacks that keeps track of available object handles for each class.
+The stacks are empty initially, meaning that allocation of new handles will be 
+based on a counter (for each object class). Any delete operation will
+return the handle to the corresponding stack, for reuse on the next allocate.*/
+objectHandleStackType objectHandleStacks = { { 0 }, { 0 }, { 0 }, { 0 }, { 0 } };
+
+/* Initial TRC_HWTC_COUNT value, for detecting if the time-stamping source is 
+enabled. If using the OS periodic timer for time-stamping, this might not 
+have been configured on the earliest events during the startup. */
+uint32_t init_hwtc_count;
+
+/*******************************************************************************
+ * RecorderData
+ *
+ * The main data structure in snapshot mode, when using the default static memory
+ * allocation (TRC_RECORDER_BUFFER_ALLOCATION_STATIC). The recorder uses a pointer
+ * RecorderDataPtr to access the data, to also allow for dynamic or custom data
+ * allocation (see TRC_CFG_RECORDER_BUFFER_ALLOCATION).
+ ******************************************************************************/
+#if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_STATIC)
+RecorderDataType RecorderData;
+#endif
+
+/*******************************************************************************
+ * RecorderDataPtr
+ *
+ * Pointer to the main data structure, when in snapshot mode. 
+ ******************************************************************************/
+RecorderDataType* RecorderDataPtr = NULL;
+
+/* This version of the function dynamically allocates the trace data */
+void prvTraceInitTraceData()
+{	
+	
+	if (RecorderDataPtr == NULL)
+	{
+#if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_STATIC)
+	RecorderDataPtr = &RecorderData;
+#elif (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_DYNAMIC)
+	RecorderDataPtr = (RecorderDataType*)TRACE_MALLOC(sizeof(RecorderDataType));
+	if (! RecorderDataPtr)
+	{
+		prvTraceError("Failed allocating recorder buffer!");
+		return;
+	}
+#elif (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_CUSTOM)
+		if (! RecorderDataPtr)
+		{
+			prvTraceError("Recorder data pointer not set! Use vTraceSetRecorderDataBuffer().");
+			return;
+		}
+#endif
+	}
+	else
+	{
+		if (RecorderDataPtr->startmarker0 == 1)
+		{
+			/* Already initialized */
+			return;
+		}
+	}
+	
+	init_hwtc_count = TRC_HWTC_COUNT;
+		
+	(void)memset(RecorderDataPtr, 0, sizeof(RecorderDataType));
+	
+	RecorderDataPtr->version = TRACE_KERNEL_VERSION;
+	RecorderDataPtr->minor_version = TRACE_MINOR_VERSION;
+	RecorderDataPtr->irq_priority_order = TRC_IRQ_PRIORITY_ORDER;
+	RecorderDataPtr->filesize = sizeof(RecorderDataType);
+	RecorderDataPtr->maxEvents = (TRC_CFG_EVENT_BUFFER_SIZE);
+	RecorderDataPtr->debugMarker0 = (int32_t) 0xF0F0F0F0;
+	RecorderDataPtr->isUsing16bitHandles = TRC_CFG_USE_16BIT_OBJECT_HANDLES;
+	RecorderDataPtr->isrTailchainingThreshold = TRC_CFG_ISR_TAILCHAINING_THRESHOLD;
+
+	/* This function is kernel specific */
+	vTraceInitObjectPropertyTable();
+
+	RecorderDataPtr->debugMarker1 = (int32_t)0xF1F1F1F1;
+	RecorderDataPtr->SymbolTable.symTableSize = (TRC_CFG_SYMBOL_TABLE_SIZE);
+	RecorderDataPtr->SymbolTable.nextFreeSymbolIndex = 1;
+#if (TRC_CFG_INCLUDE_FLOAT_SUPPORT == 1)
+	RecorderDataPtr->exampleFloatEncoding = 1.0f; /* otherwise already zero */
+#endif
+	RecorderDataPtr->debugMarker2 = (int32_t)0xF2F2F2F2;
+	prvStrncpy(RecorderDataPtr->systemInfo, "Trace Recorder Demo", 80);
+	RecorderDataPtr->debugMarker3 = (int32_t)0xF3F3F3F3;
+	RecorderDataPtr->endmarker0 = 0x0A;
+	RecorderDataPtr->endmarker1 = 0x0B;
+	RecorderDataPtr->endmarker2 = 0x0C;
+	RecorderDataPtr->endmarker3 = 0x0D;
+	RecorderDataPtr->endmarker4 = 0x71;
+	RecorderDataPtr->endmarker5 = 0x72;
+	RecorderDataPtr->endmarker6 = 0x73;
+	RecorderDataPtr->endmarker7 = 0x74;
+	RecorderDataPtr->endmarker8 = 0xF1;
+	RecorderDataPtr->endmarker9 = 0xF2;
+	RecorderDataPtr->endmarker10 = 0xF3;
+	RecorderDataPtr->endmarker11 = 0xF4;
+
+#if TRC_CFG_USE_SEPARATE_USER_EVENT_BUFFER
+	RecorderDataPtr->userEventBuffer.bufferID = 1;
+	RecorderDataPtr->userEventBuffer.version = 0;
+	RecorderDataPtr->userEventBuffer.numberOfSlots = (TRC_CFG_SEPARATE_USER_EVENT_BUFFER_SIZE);
+	RecorderDataPtr->userEventBuffer.numberOfChannels = (TRC_CFG_UB_CHANNELS) + 1;
+#endif
+
+	/* Kernel specific initialization of the objectHandleStacks variable */
+	vTraceInitObjectHandleStack();
+
+	
+	/* Finally, the 12-byte "start markers" are initialized, allowing for 
+	Tracealyzer to find the trace data in a larger RAM dump. 
+	
+	The start and end markers must be unique, but without proper precautions there
+	might be a risk of accidental duplicates of the start/end markers, e.g., due to
+	compiler optimizations.
+	
+	The below initialization of the start marker is therefore made in reverse order 
+	and the fields are volatile to ensure this assignment order. This to avoid any 
+	chance of accidental duplicates of this elsewhere in memory.
+	
+	Moreover, the fields are set byte-by-byte to avoid endian issues.*/
+	
+	RecorderDataPtr->startmarker11 = 0xF4;
+	RecorderDataPtr->startmarker10 = 0xF3;
+	RecorderDataPtr->startmarker9 = 0xF2;
+	RecorderDataPtr->startmarker8 = 0xF1;
+	RecorderDataPtr->startmarker7 = 0x74;
+	RecorderDataPtr->startmarker6 = 0x73;
+	RecorderDataPtr->startmarker5 = 0x72;
+	RecorderDataPtr->startmarker4 = 0x71;
+	RecorderDataPtr->startmarker3 = 0x04;
+	RecorderDataPtr->startmarker2 = 0x03;
+	RecorderDataPtr->startmarker1 = 0x02;	
+	RecorderDataPtr->startmarker0 = 0x01; 
+
+	if (traceErrorMessage != NULL)
+	{
+		// An error was detected before vTraceEnable was called, make sure this is stored in the trace data.
+		prvStrncpy(RecorderDataPtr->systemInfo, traceErrorMessage, 80);
+		RecorderDataPtr->internalErrorOccured = 1;
+		vTraceStop();
+	}
+
+
+	
+#ifdef TRC_PORT_SPECIFIC_INIT
+	TRC_PORT_SPECIFIC_INIT();
+#endif
+}
+
+
 void* prvTraceNextFreeEventBufferSlot(void)
 {
 	if (! RecorderDataPtr->recorderActive)
@@ -2434,7 +2321,6 @@ void prvTraceFreeObjectHandle(traceObjectClass objectclass, traceHandle handle)
 {
 	int indexOfHandle;
 
-	TRACE_ASSERT(RecorderDataPtr != NULL, "Recorder not initialized, call vTraceEnable() first!", TRC_UNUSED);
 	TRACE_ASSERT(objectclass < TRACE_NCLASSES, 
 		"prvTraceFreeObjectHandle: Invalid value for objectclass", TRC_UNUSED);
 	TRACE_ASSERT(handle > 0 && handle <= RecorderDataPtr->ObjectPropertyTable.NumberOfObjectsPerClass[objectclass], 
@@ -3182,74 +3068,6 @@ void prvTracePortGetTimeStamp(uint32_t *pTimestamp)
 	/* Store the previous value */
 	last_hwtc_count = hwtc_count;
 }
-
-#if defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0)
-
-void prvAddTaskToStackMonitor(void* task)
-{
-	int i;
-	int foundEmptySlot = 0;
-
-	// find an empty slot
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
-	{
-		if (tasksInStackMonitor[i].tcb == 0)
-		{
-			tasksInStackMonitor[i].tcb = task;
-			tasksInStackMonitor[i].uiPreviousLowMark = 0xFFFFFFFF;
-			foundEmptySlot = 1;
-			break;
-		}
-	}
-
-	if (foundEmptySlot == 0)
-	{
-		tasksNotIncluded++;
-	}
-}
-
-void prvRemoveTaskFromStackMonitor(void* task)
-{
-	int i;
-
-	for (i = 0; i < TRC_CFG_STACK_MONITOR_MAX_TASKS; i++)
-	{
-		if (tasksInStackMonitor[i].tcb == task)
-		{
-			tasksInStackMonitor[i].tcb = 0;
-			tasksInStackMonitor[i].uiPreviousLowMark = 0;
-		}
-	}
-}
-
-void prvReportStackUsage()
-{
-	static int i = 0;	/* Static index used to loop over the monitored tasks */
-	int count = 0;		/* The number of generated reports */
-	int initial = i;	/* Used to make sure we break if we are back at the inital value */
-
-	do
-	{
-		/* Check the current spot */
-		if (tasksInStackMonitor[i].tcb != 0)
-		{
-			/* Get the amount of unused stack */
-			uint32_t unusedStackSpace = prvTraceGetStackHighWaterMark(tasksInStackMonitor[i].tcb);
-
-			/* Store for later use */
-			if (tasksInStackMonitor[i].uiPreviousLowMark > unusedStackSpace)
-				tasksInStackMonitor[i].uiPreviousLowMark = unusedStackSpace;
-
-			prvTraceStoreKernelCallWithParam(TRACE_UNUSED_STACK, TRACE_CLASS_TASK, TRACE_GET_TASK_NUMBER(tasksInStackMonitor[i].tcb), tasksInStackMonitor[i].uiPreviousLowMark);
-
-			count++;
-		}
-
-		i = (i + 1) % TRC_CFG_STACK_MONITOR_MAX_TASKS; // Move i beyond this task
-	} while (count < TRC_CFG_STACK_MONITOR_MAX_REPORTS && i != initial);
-}
-#endif /* defined(TRC_CFG_ENABLE_STACK_MONITOR) && (TRC_CFG_ENABLE_STACK_MONITOR == 1) && (TRC_CFG_SCHEDULING_ONLY == 0) */
-
 
 #endif /*(TRC_USE_TRACEALYZER_RECORDER == 1)*/
 

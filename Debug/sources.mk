@@ -26,6 +26,7 @@ SUBDIRS := \
 FreeRTOS \
 FreeRTOS/portable/GCC/ARM_CM0 \
 FreeRTOS/portable/MemMang \
+TraceRecorder/streamports/Jlink_RTT \
 TraceRecorder \
 app/src \
 bsp/src \
