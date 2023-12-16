@@ -1,0 +1,5 @@
+../app/src/printf-stdarg.c:21:12:prints	20	static
+../app/src/printf-stdarg.c:54:12:printi	48	static
+../app/src/printf-stdarg.c:97:12:print	64	static
+../app/src/printf-stdarg.c:161:5:my_printf	16	static
+../app/src/printf-stdarg.c:169:5:my_sprintf	20	static

@@ -1,0 +1,14 @@
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:152:13:prvTaskExitError	3
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:185:6:vPortStartFirstTask	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:132:15:pxPortInitialiseStack	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:178:6:SVC_Handler	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:246:6:vPortEndScheduler	2
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:254:6:vPortYield	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:266:6:vPortEnterCritical	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:275:6:vPortExitCritical	3
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:287:10:ulSetInterruptMaskFromISR	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:298:6:vClearInterruptMaskFromISR	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:308:6:PendSV_Handler	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:357:6:SysTick_Handler	2
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:378:32:vPortSetupTimerInterrupt	1
+../FreeRTOS/portable/GCC/ARM_CM0/port.c:216:12:xPortStartScheduler	3

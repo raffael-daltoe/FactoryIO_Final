@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "main.h": "c",
+        "stm32f0xx.h": "c",
+        "freertosconfig.h": "c",
+        "system_error": "c",
+        "stream_buffer.h": "c",
+        "sensors.h": "c"
+    }
+}
