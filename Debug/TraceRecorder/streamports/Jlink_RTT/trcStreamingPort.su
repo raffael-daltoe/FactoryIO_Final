@@ -1,0 +1,2 @@
+../TraceRecorder/streamports/Jlink_RTT/trcStreamingPort.c:56:9:readFromRTT	32	static
+../TraceRecorder/streamports/Jlink_RTT/trcStreamingPort.c:72:9:writeToRTT	32	static
