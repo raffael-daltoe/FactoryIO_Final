@@ -1,21 +1,7 @@
 #include "bsp.h"
 #include "factory_io.h"
-
-/*
- * BSP_LED_Init()
- * Initialize LED pin (PA5) as a High-Speed Push-Pull output
- * Set LED initial state to OFF
- */
 extern uint8_t rx_dma_buffer[FRAME_LENGTH];
 extern uint8_t tx_dma_buffer[FRAME_LENGTH];
-
-/*
- * BSP_Console_Init()
- * USART2 @ 57600 Full Duplex
- * 1 start - 8-bit - 1 stop
- * TX -> PA2 (AF1)
- * RX -> PA3 (AF1)
- */
 
 void BSP_Console_Init()
 {

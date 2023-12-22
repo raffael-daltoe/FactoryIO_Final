@@ -5,41 +5,41 @@ Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
   0 .isr_vector   000000c0  08000000  08000000  00010000  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  1 .text         00006ba0  080000c0  080000c0  000100c0  2**4
+  1 .text         00006b90  080000c0  080000c0  000100c0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       0000041c  08006c60  08006c60  00016c60  2**2
+  2 .rodata       0000041c  08006c50  08006c50  00016c50  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .init_array   00000004  0800707c  0800707c  0001707c  2**2
+  3 .init_array   00000004  0800706c  0800706c  0001706c  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  4 .fini_array   00000004  08007080  08007080  00017080  2**2
+  4 .fini_array   00000004  08007070  08007070  00017070  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  5 .data         0000001c  20000000  08007084  00020000  2**2
+  5 .data         0000001c  20000000  08007074  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .bss          00003934  2000001c  080070a0  0002001c  2**2
+  6 .bss          00003934  2000001c  08007090  0002001c  2**2
                   ALLOC
-  7 ._user_heap_stack 00000600  20003950  080070a0  00023950  2**0
+  7 ._user_heap_stack 00000600  20003950  08007090  00023950  2**0
                   ALLOC
   8 .ARM.attributes 00000028  00000000  00000000  0002001c  2**0
                   CONTENTS, READONLY
   9 .comment      00000043  00000000  00000000  00020044  2**0
                   CONTENTS, READONLY
- 10 .debug_info   00009ccb  00000000  00000000  00020087  2**0
+ 10 .debug_info   00009b4a  00000000  00000000  00020087  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 11 .debug_abbrev 00002095  00000000  00000000  00029d52  2**0
+ 11 .debug_abbrev 00002000  00000000  00000000  00029bd1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 12 .debug_aranges 00000a38  00000000  00000000  0002bde8  2**3
+ 12 .debug_aranges 00000a18  00000000  00000000  0002bbd8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_rnglists 000007c6  00000000  00000000  0002c820  2**0
+ 13 .debug_rnglists 000007ae  00000000  00000000  0002c5f0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_macro  00003db3  00000000  00000000  0002cfe6  2**0
+ 14 .debug_macro  00003cc2  00000000  00000000  0002cd9e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_line   0000f6c7  00000000  00000000  00030d99  2**0
+ 15 .debug_line   0000f1ee  00000000  00000000  00030a60  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_str    0007268b  00000000  00000000  00040460  2**0
+ 16 .debug_str    00072644  00000000  00000000  0003fc4e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_frame  0000235c  00000000  00000000  000b2aec  2**2
+ 17 .debug_frame  000022e4  00000000  00000000  000b2294  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line_str 0000008e  00000000  00000000  000b4e48  2**0
+ 18 .debug_line_str 0000008e  00000000  00000000  000b4578  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -61,7 +61,7 @@ Disassembly of section .text:
  80000da:	bd10      	pop	{r4, pc}
  80000dc:	2000001c 	.word	0x2000001c
  80000e0:	00000000 	.word	0x00000000
- 80000e4:	08006c48 	.word	0x08006c48
+ 80000e4:	08006c38 	.word	0x08006c38
 
 080000e8 <frame_dummy>:
  80000e8:	4b04      	ldr	r3, [pc, #16]	; (80000fc <frame_dummy+0x14>)
@@ -76,7 +76,7 @@ Disassembly of section .text:
  80000fa:	46c0      	nop			; (mov r8, r8)
  80000fc:	00000000 	.word	0x00000000
  8000100:	20000020 	.word	0x20000020
- 8000104:	08006c48 	.word	0x08006c48
+ 8000104:	08006c38 	.word	0x08006c38
 
 08000108 <__udivsi3>:
  8000108:	2200      	movs	r2, #0
@@ -4496,7 +4496,7 @@ UBaseType_t uxMessagesWaiting;
  8001af4:	6c1a      	ldr	r2, [r3, #64]	; 0x40
  8001af6:	68bb      	ldr	r3, [r7, #8]
  8001af8:	0019      	movs	r1, r3
- 8001afa:	f005 f89b 	bl	8006c34 <memcpy>
+ 8001afa:	f005 f893 	bl	8006c24 <memcpy>
 		pxQueue->pcWriteTo += pxQueue->uxItemSize; /*lint !e9016 Pointer arithmetic on char types ok, especially in this use case where it is the clearest way of conveying intent. */
  8001afe:	68fb      	ldr	r3, [r7, #12]
  8001b00:	685a      	ldr	r2, [r3, #4]
@@ -4531,7 +4531,7 @@ UBaseType_t uxMessagesWaiting;
  8001b28:	6c1a      	ldr	r2, [r3, #64]	; 0x40
  8001b2a:	68bb      	ldr	r3, [r7, #8]
  8001b2c:	0019      	movs	r1, r3
- 8001b2e:	f005 f881 	bl	8006c34 <memcpy>
+ 8001b2e:	f005 f879 	bl	8006c24 <memcpy>
 		pxQueue->u.xQueue.pcReadFrom -= pxQueue->uxItemSize;
  8001b32:	68fb      	ldr	r3, [r7, #12]
  8001b34:	68da      	ldr	r2, [r3, #12]
@@ -4649,7 +4649,7 @@ static void prvCopyDataFromQueue( Queue_t * const pxQueue, void * const pvBuffer
  8001bbc:	6c1a      	ldr	r2, [r3, #64]	; 0x40
  8001bbe:	683b      	ldr	r3, [r7, #0]
  8001bc0:	0018      	movs	r0, r3
- 8001bc2:	f005 f837 	bl	8006c34 <memcpy>
+ 8001bc2:	f005 f82f 	bl	8006c24 <memcpy>
 	}
 }
  8001bc6:	46c0      	nop			; (mov r8, r8)
@@ -5128,7 +5128,7 @@ BaseType_t xReturn;
  8001df0:	009b      	lsls	r3, r3, #2
  8001df2:	001a      	movs	r2, r3
  8001df4:	21a5      	movs	r1, #165	; 0xa5
- 8001df6:	f004 fef1 	bl	8006bdc <memset>
+ 8001df6:	f004 fee9 	bl	8006bcc <memset>
 	grows from high memory to low (as per the 80x86) or vice versa.
 	portSTACK_GROWTH is used to make the result positive or negative as required
 	by the port. */
@@ -5986,7 +5986,7 @@ void vTaskStartScheduler( void )
  800226e:	b002      	add	sp, #8
  8002270:	bd80      	pop	{r7, pc}
  8002272:	46c0      	nop			; (mov r8, r8)
- 8002274:	08006c60 	.word	0x08006c60
+ 8002274:	08006c50 	.word	0x08006c50
  8002278:	08002a91 	.word	0x08002a91
  800227c:	20000134 	.word	0x20000134
  8002280:	20000130 	.word	0x20000130
@@ -8816,7 +8816,7 @@ BaseType_t xReturn = pdFAIL;
  8003198:	bd80      	pop	{r7, pc}
  800319a:	46c0      	nop			; (mov r8, r8)
  800319c:	2000016c 	.word	0x2000016c
- 80031a0:	08006c68 	.word	0x08006c68
+ 80031a0:	08006c58 	.word	0x08006c58
  80031a4:	080032c9 	.word	0x080032c9
  80031a8:	20000170 	.word	0x20000170
 
@@ -9654,7 +9654,7 @@ TickType_t xTimeNow;
  80035da:	46bd      	mov	sp, r7
  80035dc:	b009      	add	sp, #36	; 0x24
  80035de:	bd90      	pop	{r4, r7, pc}
- 80035e0:	08007008 	.word	0x08007008
+ 80035e0:	08006ff8 	.word	0x08006ff8
  80035e4:	2000016c 	.word	0x2000016c
 
 080035e8 <prvSwitchTimerLists>:
@@ -10597,7 +10597,7 @@ static void _DoInit(void) {
  8003a7a:	0019      	movs	r1, r3
  8003a7c:	2304      	movs	r3, #4
  8003a7e:	001a      	movs	r2, r3
- 8003a80:	f003 f8d8 	bl	8006c34 <memcpy>
+ 8003a80:	f003 f8d0 	bl	8006c24 <memcpy>
   strcpy(&p->acID[0], "SEGGER");
  8003a84:	687a      	ldr	r2, [r7, #4]
  8003a86:	4b0c      	ldr	r3, [pc, #48]	; (8003ab8 <_DoInit+0xa4>)
@@ -10605,7 +10605,7 @@ static void _DoInit(void) {
  8003a8a:	0019      	movs	r1, r3
  8003a8c:	2307      	movs	r3, #7
  8003a8e:	001a      	movs	r2, r3
- 8003a90:	f003 f8d0 	bl	8006c34 <memcpy>
+ 8003a90:	f003 f8c8 	bl	8006c24 <memcpy>
   p->acID[6] = ' ';
  8003a94:	687b      	ldr	r3, [r7, #4]
  8003a96:	2220      	movs	r2, #32
@@ -10617,11 +10617,11 @@ static void _DoInit(void) {
  8003aa0:	bd80      	pop	{r7, pc}
  8003aa2:	46c0      	nop			; (mov r8, r8)
  8003aa4:	20001d80 	.word	0x20001d80
- 8003aa8:	08006c70 	.word	0x08006c70
+ 8003aa8:	08006c60 	.word	0x08006c60
  8003aac:	20001e28 	.word	0x20001e28
  8003ab0:	20001e68 	.word	0x20001e68
- 8003ab4:	08006c7c 	.word	0x08006c7c
- 8003ab8:	08006c80 	.word	0x08006c80
+ 8003ab4:	08006c6c 	.word	0x08006c6c
+ 8003ab8:	08006c70 	.word	0x08006c70
 
 08003abc <_WriteBlocking>:
 *    NumBytes     Number of bytes to be stored in the SEGGER RTT control block.
@@ -10701,7 +10701,7 @@ static unsigned _WriteBlocking(SEGGER_RTT_BUFFER_UP* pRing, const char* pBuffer,
  8003b22:	69fa      	ldr	r2, [r7, #28]
  8003b24:	68b9      	ldr	r1, [r7, #8]
  8003b26:	0018      	movs	r0, r3
- 8003b28:	f003 f884 	bl	8006c34 <memcpy>
+ 8003b28:	f003 f87c 	bl	8006c24 <memcpy>
     NumBytesWritten += NumBytesToWrite;
  8003b2c:	69ba      	ldr	r2, [r7, #24]
  8003b2e:	69fb      	ldr	r3, [r7, #28]
@@ -10792,7 +10792,7 @@ static void _WriteNoCheck(SEGGER_RTT_BUFFER_UP* pRing, const char* pData, unsign
  8003b9c:	687a      	ldr	r2, [r7, #4]
  8003b9e:	68b9      	ldr	r1, [r7, #8]
  8003ba0:	0018      	movs	r0, r3
- 8003ba2:	f003 f847 	bl	8006c34 <memcpy>
+ 8003ba2:	f003 f83f 	bl	8006c24 <memcpy>
     pRing->WrOff = WrOff + NumBytes;
  8003ba6:	69fa      	ldr	r2, [r7, #28]
  8003ba8:	687b      	ldr	r3, [r7, #4]
@@ -10817,7 +10817,7 @@ static void _WriteNoCheck(SEGGER_RTT_BUFFER_UP* pRing, const char* pData, unsign
  8003bbe:	697a      	ldr	r2, [r7, #20]
  8003bc0:	68b9      	ldr	r1, [r7, #8]
  8003bc2:	0018      	movs	r0, r3
- 8003bc4:	f003 f836 	bl	8006c34 <memcpy>
+ 8003bc4:	f003 f82e 	bl	8006c24 <memcpy>
     NumBytesAtOnce = NumBytes - Rem;
  8003bc8:	687a      	ldr	r2, [r7, #4]
  8003bca:	69bb      	ldr	r3, [r7, #24]
@@ -10831,7 +10831,7 @@ static void _WriteNoCheck(SEGGER_RTT_BUFFER_UP* pRing, const char* pData, unsign
  8003bd8:	18d3      	adds	r3, r2, r3
  8003bda:	697a      	ldr	r2, [r7, #20]
  8003bdc:	0019      	movs	r1, r3
- 8003bde:	f003 f829 	bl	8006c34 <memcpy>
+ 8003bde:	f003 f821 	bl	8006c24 <memcpy>
     pRing->WrOff = NumBytesAtOnce;
  8003be2:	68fb      	ldr	r3, [r7, #12]
  8003be4:	697a      	ldr	r2, [r7, #20]
@@ -10976,7 +10976,7 @@ unsigned SEGGER_RTT_ReadNoLock(unsigned BufferIndex, void* pData, unsigned Buffe
  8003c9a:	693a      	ldr	r2, [r7, #16]
  8003c9c:	69fb      	ldr	r3, [r7, #28]
  8003c9e:	0018      	movs	r0, r3
- 8003ca0:	f002 ffc8 	bl	8006c34 <memcpy>
+ 8003ca0:	f002 ffc0 	bl	8006c24 <memcpy>
     NumBytesRead += NumBytesRem;
  8003ca4:	6a7a      	ldr	r2, [r7, #36]	; 0x24
  8003ca6:	693b      	ldr	r3, [r7, #16]
@@ -11038,7 +11038,7 @@ unsigned SEGGER_RTT_ReadNoLock(unsigned BufferIndex, void* pData, unsigned Buffe
  8003cf4:	693a      	ldr	r2, [r7, #16]
  8003cf6:	69fb      	ldr	r3, [r7, #28]
  8003cf8:	0018      	movs	r0, r3
- 8003cfa:	f002 ff9b 	bl	8006c34 <memcpy>
+ 8003cfa:	f002 ff93 	bl	8006c24 <memcpy>
     NumBytesRead += NumBytesRem;
  8003cfe:	6a7a      	ldr	r2, [r7, #36]	; 0x24
  8003d00:	693b      	ldr	r3, [r7, #16]
@@ -12248,10 +12248,10 @@ void vTraceEnable(int startOption)
  800439c:	20001e78 	.word	0x20001e78
  80043a0:	00001388 	.word	0x00001388
  80043a4:	20001ed8 	.word	0x20001ed8
- 80043a8:	08006c88 	.word	0x08006c88
+ 80043a8:	08006c78 	.word	0x08006c78
  80043ac:	20003260 	.word	0x20003260
- 80043b0:	08006c90 	.word	0x08006c90
- 80043b4:	08006c98 	.word	0x08006c98
+ 80043b0:	08006c80 	.word	0x08006c80
+ 80043b4:	08006c88 	.word	0x08006c88
  80043b8:	20001ed4 	.word	0x20001ed4
  80043bc:	080044e1 	.word	0x080044e1
  80043c0:	200038dc 	.word	0x200038dc
@@ -13555,7 +13555,7 @@ static void prvTraceStoreExtensionInfo(void)
  8004b10:	69fb      	ldr	r3, [r7, #28]
  8004b12:	2204      	movs	r2, #4
  8004b14:	0018      	movs	r0, r3
- 8004b16:	f002 f88d 	bl	8006c34 <memcpy>
+ 8004b16:	f002 f885 	bl	8006c24 <memcpy>
 		TRC_STREAM_PORT_COMMIT_EVENT_BLOCKING(extinfo, sizeof(PSFExtensionInfoType));		
  8004b1a:	69fb      	ldr	r3, [r7, #28]
  8004b1c:	62fb      	str	r3, [r7, #44]	; 0x2c
@@ -13755,20 +13755,20 @@ static const char* prvTraceGetError(int errCode)
  8004be2:	46bd      	mov	sp, r7
  8004be4:	b002      	add	sp, #8
  8004be6:	bd80      	pop	{r7, pc}
- 8004be8:	08007030 	.word	0x08007030
- 8004bec:	08006cb0 	.word	0x08006cb0
- 8004bf0:	08006ce4 	.word	0x08006ce4
- 8004bf4:	08006d18 	.word	0x08006d18
- 8004bf8:	08006d4c 	.word	0x08006d4c
- 8004bfc:	08006d74 	.word	0x08006d74
- 8004c00:	08006da8 	.word	0x08006da8
- 8004c04:	08006ddc 	.word	0x08006ddc
- 8004c08:	08006e08 	.word	0x08006e08
- 8004c0c:	08006e3c 	.word	0x08006e3c
- 8004c10:	08006e68 	.word	0x08006e68
- 8004c14:	08006e94 	.word	0x08006e94
- 8004c18:	08006ec0 	.word	0x08006ec0
- 8004c1c:	08006ef0 	.word	0x08006ef0
+ 8004be8:	08007020 	.word	0x08007020
+ 8004bec:	08006ca0 	.word	0x08006ca0
+ 8004bf0:	08006cd4 	.word	0x08006cd4
+ 8004bf4:	08006d08 	.word	0x08006d08
+ 8004bf8:	08006d3c 	.word	0x08006d3c
+ 8004bfc:	08006d64 	.word	0x08006d64
+ 8004c00:	08006d98 	.word	0x08006d98
+ 8004c04:	08006dcc 	.word	0x08006dcc
+ 8004c08:	08006df8 	.word	0x08006df8
+ 8004c0c:	08006e2c 	.word	0x08006e2c
+ 8004c10:	08006e58 	.word	0x08006e58
+ 8004c14:	08006e84 	.word	0x08006e84
+ 8004c18:	08006eb0 	.word	0x08006eb0
+ 8004c1c:	08006ee0 	.word	0x08006ee0
 
 08004c20 <prvTraceStoreEvent0>:
 
@@ -15632,7 +15632,7 @@ void prvTraceError(int errCode)
  80056cc:	200038d4 	.word	0x200038d4
  80056d0:	20003288 	.word	0x20003288
  80056d4:	20001ed4 	.word	0x20001ed4
- 80056d8:	08006f20 	.word	0x08006f20
+ 80056d8:	08006f10 	.word	0x08006f10
 
 080056dc <prvGetTimestamp32>:
 #endif
@@ -15858,7 +15858,7 @@ int main() {
 
     // Initialize Debug Console
     BSP_Console_Init();
- 8005822:	f000 fffd 	bl	8006820 <BSP_Console_Init>
+ 8005822:	f000 fff5 	bl	8006810 <BSP_Console_Init>
 
     // Start Trace Recording
     vTraceEnable(TRC_START);
@@ -16028,7 +16028,7 @@ int main() {
  8005942:	4942      	ldr	r1, [pc, #264]	; (8005a4c <main+0x234>)
  8005944:	4842      	ldr	r0, [pc, #264]	; (8005a50 <main+0x238>)
  8005946:	001a      	movs	r2, r3
- 8005948:	f001 f826 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005948:	f001 f81e 	bl	8006988 <FACTORY_IO_Actuators_Set>
         A1_ON | A2_ON | A11_ON | A12_OFF | A14_ON | A18_ON | A19_ON,
         A1_Msk | A2_Msk | A11_Msk | A12_Msk | A14_Msk | A18_Msk | A19_Msk,
         actuator_write_buffer
@@ -16146,30 +16146,30 @@ int main() {
  8005a1c:	2000392c 	.word	0x2000392c
  8005a20:	20003944 	.word	0x20003944
  8005a24:	20003948 	.word	0x20003948
- 8005a28:	08006f44 	.word	0x08006f44
- 8005a2c:	08006f54 	.word	0x08006f54
- 8005a30:	08006f64 	.word	0x08006f64
- 8005a34:	08006f7c 	.word	0x08006f7c
- 8005a38:	08006f88 	.word	0x08006f88
- 8005a3c:	08006f90 	.word	0x08006f90
- 8005a40:	08006f9c 	.word	0x08006f9c
- 8005a44:	08006fa8 	.word	0x08006fa8
- 8005a48:	08006fb4 	.word	0x08006fb4
+ 8005a28:	08006f34 	.word	0x08006f34
+ 8005a2c:	08006f44 	.word	0x08006f44
+ 8005a30:	08006f54 	.word	0x08006f54
+ 8005a34:	08006f6c 	.word	0x08006f6c
+ 8005a38:	08006f78 	.word	0x08006f78
+ 8005a3c:	08006f80 	.word	0x08006f80
+ 8005a40:	08006f8c 	.word	0x08006f8c
+ 8005a44:	08006f98 	.word	0x08006f98
+ 8005a48:	08006fa4 	.word	0x08006fa4
  8005a4c:	00313006 	.word	0x00313006
  8005a50:	00311006 	.word	0x00311006
- 8005a54:	08006fc0 	.word	0x08006fc0
+ 8005a54:	08006fb0 	.word	0x08006fb0
  8005a58:	08005a8d 	.word	0x08005a8d
- 8005a5c:	08006fcc 	.word	0x08006fcc
+ 8005a5c:	08006fbc 	.word	0x08006fbc
  8005a60:	08005d2d 	.word	0x08005d2d
- 8005a64:	08006fd4 	.word	0x08006fd4
+ 8005a64:	08006fc4 	.word	0x08006fc4
  8005a68:	08005ea9 	.word	0x08005ea9
- 8005a6c:	08006fdc 	.word	0x08006fdc
+ 8005a6c:	08006fcc 	.word	0x08006fcc
  8005a70:	080063f1 	.word	0x080063f1
- 8005a74:	08006fe8 	.word	0x08006fe8
+ 8005a74:	08006fd8 	.word	0x08006fd8
  8005a78:	080065d1 	.word	0x080065d1
- 8005a7c:	08006ff4 	.word	0x08006ff4
+ 8005a7c:	08006fe4 	.word	0x08006fe4
  8005a80:	080061dd 	.word	0x080061dd
- 8005a84:	08007000 	.word	0x08007000
+ 8005a84:	08006ff0 	.word	0x08006ff0
  8005a88:	08006015 	.word	0x08006015
 
 08005a8c <vSendBoxes>:
@@ -16192,7 +16192,7 @@ void vSendBoxes(void *pvParameters) {
  8005a98:	001a      	movs	r2, r3
  8005a9a:	2101      	movs	r1, #1
  8005a9c:	2001      	movs	r0, #1
- 8005a9e:	f000 ff7b 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005a9e:	f000 ff73 	bl	8006988 <FACTORY_IO_Actuators_Set>
     pm = &actuator_write_buffer;
  8005aa2:	197b      	adds	r3, r7, r5
  8005aa4:	627b      	str	r3, [r7, #36]	; 0x24
@@ -16322,7 +16322,7 @@ void vSendBoxes(void *pvParameters) {
  8005b74:	001a      	movs	r2, r3
  8005b76:	2101      	movs	r1, #1
  8005b78:	2000      	movs	r0, #0
- 8005b7a:	f000 ff0d 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005b7a:	f000 ff05 	bl	8006988 <FACTORY_IO_Actuators_Set>
     pm = &actuator_write_buffer;
  8005b7e:	197b      	adds	r3, r7, r5
  8005b80:	627b      	str	r3, [r7, #36]	; 0x24
@@ -16447,7 +16447,7 @@ void vSendBoxes(void *pvParameters) {
  8005c42:	001a      	movs	r2, r3
  8005c44:	2105      	movs	r1, #5
  8005c46:	2001      	movs	r0, #1
- 8005c48:	f000 fea6 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005c48:	f000 fe9e 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005c4c:	19bb      	adds	r3, r7, r6
  8005c4e:	627b      	str	r3, [r7, #36]	; 0x24
@@ -16544,7 +16544,7 @@ void vSendBoxes(void *pvParameters) {
  8005ce6:	001a      	movs	r2, r3
  8005ce8:	2105      	movs	r1, #5
  8005cea:	2004      	movs	r0, #4
- 8005cec:	f000 fe54 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005cec:	f000 fe4c 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005cf0:	19bb      	adds	r3, r7, r6
  8005cf2:	627b      	str	r3, [r7, #36]	; 0x24
@@ -16602,11 +16602,6 @@ void vPush(void *pvParameters) {
  8005d44:	0011      	movs	r1, r2
  8005d46:	0018      	movs	r0, r3
  8005d48:	f7fb fca6 	bl	8001698 <xQueueSemaphoreTake>
-
-        // The stock allows managing 3 batches of cartons to push
-        // When the stock is 0, the mutex is released to "etau" so that it
-        // releases the 6 cartons. Once that is done, the current task
-        // (vPush) regains the Mutex, resets the stock to 3, and resumes its cycle.
         while (stock_poussoir != 0) {
  8005d4c:	e08e      	b.n	8005e6c <vPush+0x140>
             stock_poussoir--;
@@ -16636,7 +16631,7 @@ void vPush(void *pvParameters) {
  8005d72:	001a      	movs	r2, r3
  8005d74:	2110      	movs	r1, #16
  8005d76:	2010      	movs	r0, #16
- 8005d78:	f000 fe0e 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005d78:	f000 fe06 	bl	8006988 <FACTORY_IO_Actuators_Set>
             pm = &actuator_write_buffer;
  8005d7c:	197b      	adds	r3, r7, r5
  8005d7e:	60bb      	str	r3, [r7, #8]
@@ -16712,7 +16707,7 @@ void vPush(void *pvParameters) {
  8005df2:	001a      	movs	r2, r3
  8005df4:	2110      	movs	r1, #16
  8005df6:	2000      	movs	r0, #0
- 8005df8:	f000 fdce 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005df8:	f000 fdc6 	bl	8006988 <FACTORY_IO_Actuators_Set>
             pm = &actuator_write_buffer;
  8005dfc:	197b      	adds	r3, r7, r5
  8005dfe:	60bb      	str	r3, [r7, #8]
@@ -16833,7 +16828,7 @@ void vPalete(void *pvParameters) {
  8005eb4:	4952      	ldr	r1, [pc, #328]	; (8006000 <vPalete+0x158>)
  8005eb6:	4852      	ldr	r0, [pc, #328]	; (8006000 <vPalete+0x158>)
  8005eb8:	001a      	movs	r2, r3
- 8005eba:	f000 fd6d 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005eba:	f000 fd65 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005ebe:	197b      	adds	r3, r7, r5
  8005ec0:	60fb      	str	r3, [r7, #12]
@@ -16890,7 +16885,7 @@ void vPalete(void *pvParameters) {
  8005f14:	2380      	movs	r3, #128	; 0x80
  8005f16:	011b      	lsls	r3, r3, #4
  8005f18:	0018      	movs	r0, r3
- 8005f1a:	f000 fd3d 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005f1a:	f000 fd35 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005f1e:	197b      	adds	r3, r7, r5
  8005f20:	60fb      	str	r3, [r7, #12]
@@ -16944,7 +16939,7 @@ void vPalete(void *pvParameters) {
  8005f6e:	02db      	lsls	r3, r3, #11
  8005f70:	0019      	movs	r1, r3
  8005f72:	2000      	movs	r0, #0
- 8005f74:	f000 fd10 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005f74:	f000 fd08 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005f78:	197b      	adds	r3, r7, r5
  8005f7a:	60fb      	str	r3, [r7, #12]
@@ -16984,7 +16979,7 @@ void vPalete(void *pvParameters) {
  8005fb0:	2380      	movs	r3, #128	; 0x80
  8005fb2:	011b      	lsls	r3, r3, #4
  8005fb4:	0018      	movs	r0, r3
- 8005fb6:	f000 fcef 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8005fb6:	f000 fce7 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8005fba:	197b      	adds	r3, r7, r5
  8005fbc:	60fb      	str	r3, [r7, #12]
@@ -17068,7 +17063,7 @@ void vEstado(void *pvParameters) {
  8006036:	001a      	movs	r2, r3
  8006038:	2120      	movs	r1, #32
  800603a:	2020      	movs	r0, #32
- 800603c:	f000 fcac 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 800603c:	f000 fca4 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8006040:	197b      	adds	r3, r7, r5
  8006042:	60fb      	str	r3, [r7, #12]
@@ -17133,7 +17128,7 @@ void vEstado(void *pvParameters) {
  80060a2:	001a      	movs	r2, r3
  80060a4:	2108      	movs	r1, #8
  80060a6:	2008      	movs	r0, #8
- 80060a8:	f000 fc76 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 80060a8:	f000 fc6e 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  80060ac:	197b      	adds	r3, r7, r5
  80060ae:	60fb      	str	r3, [r7, #12]
@@ -17180,7 +17175,7 @@ void vEstado(void *pvParameters) {
  80060f0:	001a      	movs	r2, r3
  80060f2:	2120      	movs	r1, #32
  80060f4:	2000      	movs	r0, #0
- 80060f6:	f000 fc4f 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 80060f6:	f000 fc47 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  80060fa:	197b      	adds	r3, r7, r5
  80060fc:	60fb      	str	r3, [r7, #12]
@@ -17254,7 +17249,7 @@ void vEstado(void *pvParameters) {
  8006166:	001a      	movs	r2, r3
  8006168:	2108      	movs	r1, #8
  800616a:	2000      	movs	r0, #0
- 800616c:	f000 fc14 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 800616c:	f000 fc0c 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8006170:	197b      	adds	r3, r7, r5
  8006172:	60fb      	str	r3, [r7, #12]
@@ -17349,7 +17344,7 @@ void vElevador(void *pvParameters) {
  8006200:	2390      	movs	r3, #144	; 0x90
  8006202:	009b      	lsls	r3, r3, #2
  8006204:	0018      	movs	r0, r3
- 8006206:	f000 fbc7 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8006206:	f000 fbbf 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  800620a:	193b      	adds	r3, r7, r4
  800620c:	60fb      	str	r3, [r7, #12]
@@ -17413,7 +17408,7 @@ void vElevador(void *pvParameters) {
  800626a:	009b      	lsls	r3, r3, #2
  800626c:	0019      	movs	r1, r3
  800626e:	2000      	movs	r0, #0
- 8006270:	f000 fb92 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8006270:	f000 fb8a 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8006274:	193b      	adds	r3, r7, r4
  8006276:	60fb      	str	r3, [r7, #12]
@@ -17445,7 +17440,7 @@ void vElevador(void *pvParameters) {
  80062a0:	2380      	movs	r3, #128	; 0x80
  80062a2:	005b      	lsls	r3, r3, #1
  80062a4:	0018      	movs	r0, r3
- 80062a6:	f000 fb77 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 80062a6:	f000 fb6f 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  80062aa:	193b      	adds	r3, r7, r4
  80062ac:	60fb      	str	r3, [r7, #12]
@@ -17498,7 +17493,7 @@ void vElevador(void *pvParameters) {
  80062f8:	005b      	lsls	r3, r3, #1
  80062fa:	0019      	movs	r1, r3
  80062fc:	2000      	movs	r0, #0
- 80062fe:	f000 fb4b 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 80062fe:	f000 fb43 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8006302:	193b      	adds	r3, r7, r4
  8006304:	60fb      	str	r3, [r7, #12]
@@ -17548,7 +17543,7 @@ void vElevador(void *pvParameters) {
  800634a:	23c0      	movs	r3, #192	; 0xc0
  800634c:	009b      	lsls	r3, r3, #2
  800634e:	0018      	movs	r0, r3
- 8006350:	f000 fb22 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 8006350:	f000 fb1a 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  8006354:	193b      	adds	r3, r7, r4
  8006356:	60fb      	str	r3, [r7, #12]
@@ -17618,7 +17613,7 @@ void vElevador(void *pvParameters) {
  80063bc:	009b      	lsls	r3, r3, #2
  80063be:	0019      	movs	r1, r3
  80063c0:	2000      	movs	r0, #0
- 80063c2:	f000 fae9 	bl	8006998 <FACTORY_IO_Actuators_Set>
+ 80063c2:	f000 fae1 	bl	8006988 <FACTORY_IO_Actuators_Set>
         pm = &actuator_write_buffer;
  80063c6:	193b      	adds	r3, r7, r4
  80063c8:	60fb      	str	r3, [r7, #12]
@@ -17855,7 +17850,7 @@ void vTask_Pub(void *pvParameters) {
  800653c:	3308      	adds	r3, #8
  800653e:	681b      	ldr	r3, [r3, #0]
  8006540:	0019      	movs	r1, r3
- 8006542:	f000 fa65 	bl	8006a10 <FACTORY_IO_Sensors_Check>
+ 8006542:	f000 fa5d 	bl	8006a00 <FACTORY_IO_Sensors_Check>
  8006546:	1e03      	subs	r3, r0, #0
  8006548:	d028      	beq.n	800659c <vTask_Pub+0x1ac>
                     // If so, give the corresponding semaphore
@@ -18136,13 +18131,13 @@ static void SystemClock_Config()
  80066ea:	430a      	orrs	r2, r1
  80066ec:	605a      	str	r2, [r3, #4]
 
-	// Set PLL PREDIV to /1
+	// Set PLL PREDIV to /8
 	RCC->CFGR2 = RCC_CFGR_HPRE_DIV8;
  80066ee:	4b2f      	ldr	r3, [pc, #188]	; (80067ac <SystemClock_Config+0x120>)
  80066f0:	22a0      	movs	r2, #160	; 0xa0
  80066f2:	62da      	str	r2, [r3, #44]	; 0x2c
 
-	// Set PLL MUL to x6
+	// Set PLL MUL to x1
 	RCC->CFGR &= ~RCC_CFGR_PLLMUL_Msk;
  80066f4:	4b2d      	ldr	r3, [pc, #180]	; (80067ac <SystemClock_Config+0x120>)
  80066f6:	685a      	ldr	r2, [r3, #4]
@@ -18263,7 +18258,7 @@ static void SystemClock_Config()
 
 	// Update SystemCoreClock global variable
 	SystemCoreClockUpdate();
- 800679a:	f000 f999 	bl	8006ad0 <SystemCoreClockUpdate>
+ 800679a:	f000 f991 	bl	8006ac0 <SystemCoreClockUpdate>
 }
  800679e:	46c0      	nop			; (mov r8, r8)
  80067a0:	46bd      	mov	sp, r7
@@ -18277,908 +18272,870 @@ static void SystemClock_Config()
  80067b8:	fffff8ff 	.word	0xfffff8ff
  80067bc:	40022000 	.word	0x40022000
 
-080067c0 <NMI_Handler>:
-  * @brief  This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
-void NMI_Handler(void)
-{
- 80067c0:	b580      	push	{r7, lr}
- 80067c2:	af00      	add	r7, sp, #0
-}
- 80067c4:	46c0      	nop			; (mov r8, r8)
- 80067c6:	46bd      	mov	sp, r7
- 80067c8:	bd80      	pop	{r7, pc}
-
-080067ca <HardFault_Handler>:
-  * @brief  This function handles Hard Fault exception.
-  * @param  None
-  * @retval None
-  */
-void HardFault_Handler(void)
-{
- 80067ca:	b580      	push	{r7, lr}
- 80067cc:	af00      	add	r7, sp, #0
-  /* Go to infinite loop when Hard Fault exception occurs */
-  while (1)
- 80067ce:	e7fe      	b.n	80067ce <HardFault_Handler+0x4>
-
-080067d0 <DMA1_Channel4_5_6_7_IRQHandler>:
-/*
- * This function handles DMA2 interrupt request.
- */
+080067c0 <DMA1_Channel4_5_6_7_IRQHandler>:
+#include "main.h"
+#include "stm32f0xx_it.h"
 extern xSemaphoreHandle xSem_DMA_TC;
 
 void DMA1_Channel4_5_6_7_IRQHandler(){
- 80067d0:	b580      	push	{r7, lr}
- 80067d2:	b082      	sub	sp, #8
- 80067d4:	af00      	add	r7, sp, #0
+ 80067c0:	b580      	push	{r7, lr}
+ 80067c2:	b082      	sub	sp, #8
+ 80067c4:	af00      	add	r7, sp, #0
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
- 80067d6:	2300      	movs	r3, #0
- 80067d8:	607b      	str	r3, [r7, #4]
-
+ 80067c6:	2300      	movs	r3, #0
+ 80067c8:	607b      	str	r3, [r7, #4]
 	if((DMA1->ISR & DMA_ISR_TCIF4_Msk) != 0){
- 80067da:	4b0e      	ldr	r3, [pc, #56]	; (8006814 <DMA1_Channel4_5_6_7_IRQHandler+0x44>)
- 80067dc:	681a      	ldr	r2, [r3, #0]
- 80067de:	2380      	movs	r3, #128	; 0x80
- 80067e0:	019b      	lsls	r3, r3, #6
- 80067e2:	4013      	ands	r3, r2
- 80067e4:	d011      	beq.n	800680a <DMA1_Channel4_5_6_7_IRQHandler+0x3a>
-		// Clear DMA4 interrupt by writing a '1'
+ 80067ca:	4b0e      	ldr	r3, [pc, #56]	; (8006804 <DMA1_Channel4_5_6_7_IRQHandler+0x44>)
+ 80067cc:	681a      	ldr	r2, [r3, #0]
+ 80067ce:	2380      	movs	r3, #128	; 0x80
+ 80067d0:	019b      	lsls	r3, r3, #6
+ 80067d2:	4013      	ands	r3, r2
+ 80067d4:	d011      	beq.n	80067fa <DMA1_Channel4_5_6_7_IRQHandler+0x3a>
 		DMA1->IFCR = DMA_IFCR_CTCIF4;
- 80067e6:	4b0b      	ldr	r3, [pc, #44]	; (8006814 <DMA1_Channel4_5_6_7_IRQHandler+0x44>)
- 80067e8:	2280      	movs	r2, #128	; 0x80
- 80067ea:	0192      	lsls	r2, r2, #6
- 80067ec:	605a      	str	r2, [r3, #4]
-
-		// Do what you need
+ 80067d6:	4b0b      	ldr	r3, [pc, #44]	; (8006804 <DMA1_Channel4_5_6_7_IRQHandler+0x44>)
+ 80067d8:	2280      	movs	r2, #128	; 0x80
+ 80067da:	0192      	lsls	r2, r2, #6
+ 80067dc:	605a      	str	r2, [r3, #4]
 		xSemaphoreGiveFromISR(xSem_DMA_TC, &xHigherPriorityTaskWoken);
- 80067ee:	4b0a      	ldr	r3, [pc, #40]	; (8006818 <DMA1_Channel4_5_6_7_IRQHandler+0x48>)
- 80067f0:	681b      	ldr	r3, [r3, #0]
- 80067f2:	1d3a      	adds	r2, r7, #4
- 80067f4:	0011      	movs	r1, r2
- 80067f6:	0018      	movs	r0, r3
- 80067f8:	f7fa fcc8 	bl	800118c <xQueueGiveFromISR>
-
-		// Perform a context switch to the waiting task
+ 80067de:	4b0a      	ldr	r3, [pc, #40]	; (8006808 <DMA1_Channel4_5_6_7_IRQHandler+0x48>)
+ 80067e0:	681b      	ldr	r3, [r3, #0]
+ 80067e2:	1d3a      	adds	r2, r7, #4
+ 80067e4:	0011      	movs	r1, r2
+ 80067e6:	0018      	movs	r0, r3
+ 80067e8:	f7fa fcd0 	bl	800118c <xQueueGiveFromISR>
 		portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
- 80067fc:	687b      	ldr	r3, [r7, #4]
- 80067fe:	2b00      	cmp	r3, #0
- 8006800:	d003      	beq.n	800680a <DMA1_Channel4_5_6_7_IRQHandler+0x3a>
- 8006802:	4b06      	ldr	r3, [pc, #24]	; (800681c <DMA1_Channel4_5_6_7_IRQHandler+0x4c>)
- 8006804:	2280      	movs	r2, #128	; 0x80
- 8006806:	0552      	lsls	r2, r2, #21
- 8006808:	601a      	str	r2, [r3, #0]
+ 80067ec:	687b      	ldr	r3, [r7, #4]
+ 80067ee:	2b00      	cmp	r3, #0
+ 80067f0:	d003      	beq.n	80067fa <DMA1_Channel4_5_6_7_IRQHandler+0x3a>
+ 80067f2:	4b06      	ldr	r3, [pc, #24]	; (800680c <DMA1_Channel4_5_6_7_IRQHandler+0x4c>)
+ 80067f4:	2280      	movs	r2, #128	; 0x80
+ 80067f6:	0552      	lsls	r2, r2, #21
+ 80067f8:	601a      	str	r2, [r3, #0]
 	}
-}
- 800680a:	46c0      	nop			; (mov r8, r8)
- 800680c:	46bd      	mov	sp, r7
- 800680e:	b002      	add	sp, #8
- 8006810:	bd80      	pop	{r7, pc}
- 8006812:	46c0      	nop			; (mov r8, r8)
- 8006814:	40020000 	.word	0x40020000
- 8006818:	20003944 	.word	0x20003944
- 800681c:	e000ed04 	.word	0xe000ed04
+ 80067fa:	46c0      	nop			; (mov r8, r8)
+ 80067fc:	46bd      	mov	sp, r7
+ 80067fe:	b002      	add	sp, #8
+ 8006800:	bd80      	pop	{r7, pc}
+ 8006802:	46c0      	nop			; (mov r8, r8)
+ 8006804:	40020000 	.word	0x40020000
+ 8006808:	20003944 	.word	0x20003944
+ 800680c:	e000ed04 	.word	0xe000ed04
 
-08006820 <BSP_Console_Init>:
- * TX -> PA2 (AF1)
- * RX -> PA3 (AF1)
- */
+08006810 <BSP_Console_Init>:
+#include "factory_io.h"
+extern uint8_t rx_dma_buffer[FRAME_LENGTH];
+extern uint8_t tx_dma_buffer[FRAME_LENGTH];
 
 void BSP_Console_Init()
 {
- 8006820:	b580      	push	{r7, lr}
- 8006822:	af00      	add	r7, sp, #0
+ 8006810:	b580      	push	{r7, lr}
+ 8006812:	af00      	add	r7, sp, #0
 	// Enable GPIOA clock
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
- 8006824:	4b53      	ldr	r3, [pc, #332]	; (8006974 <BSP_Console_Init+0x154>)
- 8006826:	695a      	ldr	r2, [r3, #20]
- 8006828:	4b52      	ldr	r3, [pc, #328]	; (8006974 <BSP_Console_Init+0x154>)
- 800682a:	2180      	movs	r1, #128	; 0x80
- 800682c:	0289      	lsls	r1, r1, #10
- 800682e:	430a      	orrs	r2, r1
- 8006830:	615a      	str	r2, [r3, #20]
+ 8006814:	4b53      	ldr	r3, [pc, #332]	; (8006964 <BSP_Console_Init+0x154>)
+ 8006816:	695a      	ldr	r2, [r3, #20]
+ 8006818:	4b52      	ldr	r3, [pc, #328]	; (8006964 <BSP_Console_Init+0x154>)
+ 800681a:	2180      	movs	r1, #128	; 0x80
+ 800681c:	0289      	lsls	r1, r1, #10
+ 800681e:	430a      	orrs	r2, r1
+ 8006820:	615a      	str	r2, [r3, #20]
 
 	// Configure PA2 and PA3 as Alternate function
 	GPIOA->MODER &= ~(GPIO_MODER_MODER2_Msk | GPIO_MODER_MODER3_Msk);
+ 8006822:	2390      	movs	r3, #144	; 0x90
+ 8006824:	05db      	lsls	r3, r3, #23
+ 8006826:	681a      	ldr	r2, [r3, #0]
+ 8006828:	2390      	movs	r3, #144	; 0x90
+ 800682a:	05db      	lsls	r3, r3, #23
+ 800682c:	21f0      	movs	r1, #240	; 0xf0
+ 800682e:	438a      	bics	r2, r1
+ 8006830:	601a      	str	r2, [r3, #0]
+	GPIOA->MODER |= (0x02 <<GPIO_MODER_MODER2_Pos) | (0x02 <<GPIO_MODER_MODER3_Pos);
  8006832:	2390      	movs	r3, #144	; 0x90
  8006834:	05db      	lsls	r3, r3, #23
  8006836:	681a      	ldr	r2, [r3, #0]
  8006838:	2390      	movs	r3, #144	; 0x90
  800683a:	05db      	lsls	r3, r3, #23
- 800683c:	21f0      	movs	r1, #240	; 0xf0
- 800683e:	438a      	bics	r2, r1
+ 800683c:	21a0      	movs	r1, #160	; 0xa0
+ 800683e:	430a      	orrs	r2, r1
  8006840:	601a      	str	r2, [r3, #0]
-	GPIOA->MODER |= (0x02 <<GPIO_MODER_MODER2_Pos) | (0x02 <<GPIO_MODER_MODER3_Pos);
- 8006842:	2390      	movs	r3, #144	; 0x90
- 8006844:	05db      	lsls	r3, r3, #23
- 8006846:	681a      	ldr	r2, [r3, #0]
- 8006848:	2390      	movs	r3, #144	; 0x90
- 800684a:	05db      	lsls	r3, r3, #23
- 800684c:	21a0      	movs	r1, #160	; 0xa0
- 800684e:	430a      	orrs	r2, r1
- 8006850:	601a      	str	r2, [r3, #0]
 
 	// Set PA2 and PA3 to AF1 (USART2)
 	GPIOA->AFR[0] &= ~(0x0000FF00);
+ 8006842:	2390      	movs	r3, #144	; 0x90
+ 8006844:	05db      	lsls	r3, r3, #23
+ 8006846:	6a1a      	ldr	r2, [r3, #32]
+ 8006848:	2390      	movs	r3, #144	; 0x90
+ 800684a:	05db      	lsls	r3, r3, #23
+ 800684c:	4946      	ldr	r1, [pc, #280]	; (8006968 <BSP_Console_Init+0x158>)
+ 800684e:	400a      	ands	r2, r1
+ 8006850:	621a      	str	r2, [r3, #32]
+	GPIOA->AFR[0] |=  (0x00001100);
  8006852:	2390      	movs	r3, #144	; 0x90
  8006854:	05db      	lsls	r3, r3, #23
  8006856:	6a1a      	ldr	r2, [r3, #32]
  8006858:	2390      	movs	r3, #144	; 0x90
  800685a:	05db      	lsls	r3, r3, #23
- 800685c:	4946      	ldr	r1, [pc, #280]	; (8006978 <BSP_Console_Init+0x158>)
- 800685e:	400a      	ands	r2, r1
- 8006860:	621a      	str	r2, [r3, #32]
-	GPIOA->AFR[0] |=  (0x00001100);
- 8006862:	2390      	movs	r3, #144	; 0x90
- 8006864:	05db      	lsls	r3, r3, #23
- 8006866:	6a1a      	ldr	r2, [r3, #32]
- 8006868:	2390      	movs	r3, #144	; 0x90
- 800686a:	05db      	lsls	r3, r3, #23
- 800686c:	2188      	movs	r1, #136	; 0x88
- 800686e:	0149      	lsls	r1, r1, #5
- 8006870:	430a      	orrs	r2, r1
- 8006872:	621a      	str	r2, [r3, #32]
+ 800685c:	2188      	movs	r1, #136	; 0x88
+ 800685e:	0149      	lsls	r1, r1, #5
+ 8006860:	430a      	orrs	r2, r1
+ 8006862:	621a      	str	r2, [r3, #32]
 
 	// Enable USART2 clock
 	RCC -> APB1ENR |= RCC_APB1ENR_USART2EN;
- 8006874:	4b3f      	ldr	r3, [pc, #252]	; (8006974 <BSP_Console_Init+0x154>)
- 8006876:	69da      	ldr	r2, [r3, #28]
- 8006878:	4b3e      	ldr	r3, [pc, #248]	; (8006974 <BSP_Console_Init+0x154>)
- 800687a:	2180      	movs	r1, #128	; 0x80
- 800687c:	0289      	lsls	r1, r1, #10
- 800687e:	430a      	orrs	r2, r1
- 8006880:	61da      	str	r2, [r3, #28]
+ 8006864:	4b3f      	ldr	r3, [pc, #252]	; (8006964 <BSP_Console_Init+0x154>)
+ 8006866:	69da      	ldr	r2, [r3, #28]
+ 8006868:	4b3e      	ldr	r3, [pc, #248]	; (8006964 <BSP_Console_Init+0x154>)
+ 800686a:	2180      	movs	r1, #128	; 0x80
+ 800686c:	0289      	lsls	r1, r1, #10
+ 800686e:	430a      	orrs	r2, r1
+ 8006870:	61da      	str	r2, [r3, #28]
 
 	// Clear USART2 configuration (reset state)
 	// 8-bit, 1 start, 1 stop, CTS/RTS disabled
 	USART2->CR1 = 0x00000000;
- 8006882:	4b3e      	ldr	r3, [pc, #248]	; (800697c <BSP_Console_Init+0x15c>)
- 8006884:	2200      	movs	r2, #0
- 8006886:	601a      	str	r2, [r3, #0]
+ 8006872:	4b3e      	ldr	r3, [pc, #248]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006874:	2200      	movs	r2, #0
+ 8006876:	601a      	str	r2, [r3, #0]
 	USART2->CR2 = 0x00000000;
- 8006888:	4b3c      	ldr	r3, [pc, #240]	; (800697c <BSP_Console_Init+0x15c>)
- 800688a:	2200      	movs	r2, #0
- 800688c:	605a      	str	r2, [r3, #4]
+ 8006878:	4b3c      	ldr	r3, [pc, #240]	; (800696c <BSP_Console_Init+0x15c>)
+ 800687a:	2200      	movs	r2, #0
+ 800687c:	605a      	str	r2, [r3, #4]
 	USART2->CR3 = 0x00000000;
- 800688e:	4b3b      	ldr	r3, [pc, #236]	; (800697c <BSP_Console_Init+0x15c>)
- 8006890:	2200      	movs	r2, #0
- 8006892:	609a      	str	r2, [r3, #8]
+ 800687e:	4b3b      	ldr	r3, [pc, #236]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006880:	2200      	movs	r2, #0
+ 8006882:	609a      	str	r2, [r3, #8]
 
 	// Baud Rate = 57600
 	// With OVER8=0 and Fck=1MHz, USARTDIV = 48E6/9600 = 17
 
 	//USART2->CR1 |=USART_CR1_OVER8_Msk;
 	USART2->BRR = 17;//For 1MHz
- 8006894:	4b39      	ldr	r3, [pc, #228]	; (800697c <BSP_Console_Init+0x15c>)
- 8006896:	2211      	movs	r2, #17
- 8006898:	60da      	str	r2, [r3, #12]
+ 8006884:	4b39      	ldr	r3, [pc, #228]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006886:	2211      	movs	r2, #17
+ 8006888:	60da      	str	r2, [r3, #12]
 
 	// Enable both Transmitter and Receiver
 	USART2->CR1 |= USART_CR1_TE | USART_CR1_RE;
- 800689a:	4b38      	ldr	r3, [pc, #224]	; (800697c <BSP_Console_Init+0x15c>)
- 800689c:	681a      	ldr	r2, [r3, #0]
- 800689e:	4b37      	ldr	r3, [pc, #220]	; (800697c <BSP_Console_Init+0x15c>)
- 80068a0:	210c      	movs	r1, #12
- 80068a2:	430a      	orrs	r2, r1
- 80068a4:	601a      	str	r2, [r3, #0]
+ 800688a:	4b38      	ldr	r3, [pc, #224]	; (800696c <BSP_Console_Init+0x15c>)
+ 800688c:	681a      	ldr	r2, [r3, #0]
+ 800688e:	4b37      	ldr	r3, [pc, #220]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006890:	210c      	movs	r1, #12
+ 8006892:	430a      	orrs	r2, r1
+ 8006894:	601a      	str	r2, [r3, #0]
 
 	// Setup TX on DMA Channel 4 //
 
 	// Start DMA clock
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN;
- 80068a6:	4b33      	ldr	r3, [pc, #204]	; (8006974 <BSP_Console_Init+0x154>)
- 80068a8:	695a      	ldr	r2, [r3, #20]
- 80068aa:	4b32      	ldr	r3, [pc, #200]	; (8006974 <BSP_Console_Init+0x154>)
- 80068ac:	2101      	movs	r1, #1
- 80068ae:	430a      	orrs	r2, r1
- 80068b0:	615a      	str	r2, [r3, #20]
+ 8006896:	4b33      	ldr	r3, [pc, #204]	; (8006964 <BSP_Console_Init+0x154>)
+ 8006898:	695a      	ldr	r2, [r3, #20]
+ 800689a:	4b32      	ldr	r3, [pc, #200]	; (8006964 <BSP_Console_Init+0x154>)
+ 800689c:	2101      	movs	r1, #1
+ 800689e:	430a      	orrs	r2, r1
+ 80068a0:	615a      	str	r2, [r3, #20]
 
 	// Reset DMA1 Channel 4 configuration
 	DMA1_Channel4->CCR = 0x00000000;
- 80068b2:	4b33      	ldr	r3, [pc, #204]	; (8006980 <BSP_Console_Init+0x160>)
- 80068b4:	2200      	movs	r2, #0
- 80068b6:	601a      	str	r2, [r3, #0]
+ 80068a2:	4b33      	ldr	r3, [pc, #204]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068a4:	2200      	movs	r2, #0
+ 80068a6:	601a      	str	r2, [r3, #0]
 
 	// Set direction Memory -> Peripheral
 	DMA1_Channel4->CCR = DMA_CCR_DIR;
- 80068b8:	4b31      	ldr	r3, [pc, #196]	; (8006980 <BSP_Console_Init+0x160>)
- 80068ba:	2210      	movs	r2, #16
- 80068bc:	601a      	str	r2, [r3, #0]
+ 80068a8:	4b31      	ldr	r3, [pc, #196]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068aa:	2210      	movs	r2, #16
+ 80068ac:	601a      	str	r2, [r3, #0]
 
 	// Peripheral is USART2 TDR
 	DMA1_Channel4->CPAR = (uint32_t)&USART2->TDR;
- 80068be:	4b30      	ldr	r3, [pc, #192]	; (8006980 <BSP_Console_Init+0x160>)
- 80068c0:	4a30      	ldr	r2, [pc, #192]	; (8006984 <BSP_Console_Init+0x164>)
- 80068c2:	609a      	str	r2, [r3, #8]
+ 80068ae:	4b30      	ldr	r3, [pc, #192]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068b0:	4a30      	ldr	r2, [pc, #192]	; (8006974 <BSP_Console_Init+0x164>)
+ 80068b2:	609a      	str	r2, [r3, #8]
 
 	// Peripheral data size is 8-bit (byte)
 	DMA1_Channel4->CCR |= (0x00 <<DMA_CCR_PSIZE_Pos);
- 80068c4:	4a2e      	ldr	r2, [pc, #184]	; (8006980 <BSP_Console_Init+0x160>)
- 80068c6:	4b2e      	ldr	r3, [pc, #184]	; (8006980 <BSP_Console_Init+0x160>)
- 80068c8:	6812      	ldr	r2, [r2, #0]
- 80068ca:	601a      	str	r2, [r3, #0]
+ 80068b4:	4a2e      	ldr	r2, [pc, #184]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068b6:	4b2e      	ldr	r3, [pc, #184]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068b8:	6812      	ldr	r2, [r2, #0]
+ 80068ba:	601a      	str	r2, [r3, #0]
 
 	// Enable Transfer complete interrupt enable
 	DMA1_Channel4->CCR |= DMA_CCR_TCIE;
- 80068cc:	4b2c      	ldr	r3, [pc, #176]	; (8006980 <BSP_Console_Init+0x160>)
- 80068ce:	681a      	ldr	r2, [r3, #0]
- 80068d0:	4b2b      	ldr	r3, [pc, #172]	; (8006980 <BSP_Console_Init+0x160>)
- 80068d2:	2102      	movs	r1, #2
- 80068d4:	430a      	orrs	r2, r1
- 80068d6:	601a      	str	r2, [r3, #0]
+ 80068bc:	4b2c      	ldr	r3, [pc, #176]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068be:	681a      	ldr	r2, [r3, #0]
+ 80068c0:	4b2b      	ldr	r3, [pc, #172]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068c2:	2102      	movs	r1, #2
+ 80068c4:	430a      	orrs	r2, r1
+ 80068c6:	601a      	str	r2, [r3, #0]
 
 	// Memory is tx_dma_buffer
 	DMA1_Channel4->CMAR = (uint32_t)tx_dma_buffer;
- 80068d8:	4b29      	ldr	r3, [pc, #164]	; (8006980 <BSP_Console_Init+0x160>)
- 80068da:	4a2b      	ldr	r2, [pc, #172]	; (8006988 <BSP_Console_Init+0x168>)
- 80068dc:	60da      	str	r2, [r3, #12]
+ 80068c8:	4b29      	ldr	r3, [pc, #164]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068ca:	4a2b      	ldr	r2, [pc, #172]	; (8006978 <BSP_Console_Init+0x168>)
+ 80068cc:	60da      	str	r2, [r3, #12]
 
 	// Memory data size is 8-bit (byte)
 	DMA1_Channel4->CCR |= (0x00 <<DMA_CCR_MSIZE_Pos);
- 80068de:	4a28      	ldr	r2, [pc, #160]	; (8006980 <BSP_Console_Init+0x160>)
- 80068e0:	4b27      	ldr	r3, [pc, #156]	; (8006980 <BSP_Console_Init+0x160>)
- 80068e2:	6812      	ldr	r2, [r2, #0]
- 80068e4:	601a      	str	r2, [r3, #0]
+ 80068ce:	4a28      	ldr	r2, [pc, #160]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068d0:	4b27      	ldr	r3, [pc, #156]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068d2:	6812      	ldr	r2, [r2, #0]
+ 80068d4:	601a      	str	r2, [r3, #0]
 
 	// Enable auto-increment Memory address
 	DMA1_Channel4->CCR |= DMA_CCR_MINC;
- 80068e6:	4b26      	ldr	r3, [pc, #152]	; (8006980 <BSP_Console_Init+0x160>)
- 80068e8:	681a      	ldr	r2, [r3, #0]
- 80068ea:	4b25      	ldr	r3, [pc, #148]	; (8006980 <BSP_Console_Init+0x160>)
- 80068ec:	2180      	movs	r1, #128	; 0x80
- 80068ee:	430a      	orrs	r2, r1
- 80068f0:	601a      	str	r2, [r3, #0]
+ 80068d6:	4b26      	ldr	r3, [pc, #152]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068d8:	681a      	ldr	r2, [r3, #0]
+ 80068da:	4b25      	ldr	r3, [pc, #148]	; (8006970 <BSP_Console_Init+0x160>)
+ 80068dc:	2180      	movs	r1, #128	; 0x80
+ 80068de:	430a      	orrs	r2, r1
+ 80068e0:	601a      	str	r2, [r3, #0]
 
 	// Setup RX on DMA Channel 5 //
 
 	// Reset DMA1 Channel 5 configuration
 	DMA1_Channel5->CCR = 0x00000000;
- 80068f2:	4b26      	ldr	r3, [pc, #152]	; (800698c <BSP_Console_Init+0x16c>)
- 80068f4:	2200      	movs	r2, #0
- 80068f6:	601a      	str	r2, [r3, #0]
+ 80068e2:	4b26      	ldr	r3, [pc, #152]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068e4:	2200      	movs	r2, #0
+ 80068e6:	601a      	str	r2, [r3, #0]
 
 	// Set direction Peripheral -> Memory
 	DMA1_Channel5->CCR &= ~DMA_CCR_DIR;
- 80068f8:	4b24      	ldr	r3, [pc, #144]	; (800698c <BSP_Console_Init+0x16c>)
- 80068fa:	681a      	ldr	r2, [r3, #0]
- 80068fc:	4b23      	ldr	r3, [pc, #140]	; (800698c <BSP_Console_Init+0x16c>)
- 80068fe:	2110      	movs	r1, #16
- 8006900:	438a      	bics	r2, r1
- 8006902:	601a      	str	r2, [r3, #0]
+ 80068e8:	4b24      	ldr	r3, [pc, #144]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068ea:	681a      	ldr	r2, [r3, #0]
+ 80068ec:	4b23      	ldr	r3, [pc, #140]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068ee:	2110      	movs	r1, #16
+ 80068f0:	438a      	bics	r2, r1
+ 80068f2:	601a      	str	r2, [r3, #0]
 
 	// Peripheral is USART2 RDR
 	DMA1_Channel5->CPAR = (uint32_t)&USART2->RDR;
- 8006904:	4b21      	ldr	r3, [pc, #132]	; (800698c <BSP_Console_Init+0x16c>)
- 8006906:	4a22      	ldr	r2, [pc, #136]	; (8006990 <BSP_Console_Init+0x170>)
- 8006908:	609a      	str	r2, [r3, #8]
+ 80068f4:	4b21      	ldr	r3, [pc, #132]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068f6:	4a22      	ldr	r2, [pc, #136]	; (8006980 <BSP_Console_Init+0x170>)
+ 80068f8:	609a      	str	r2, [r3, #8]
 
 	// Peripheral data size is 8-bit (byte)
 	DMA1_Channel5->CCR |= (0x00 <<DMA_CCR_PSIZE_Pos);
- 800690a:	4a20      	ldr	r2, [pc, #128]	; (800698c <BSP_Console_Init+0x16c>)
- 800690c:	4b1f      	ldr	r3, [pc, #124]	; (800698c <BSP_Console_Init+0x16c>)
- 800690e:	6812      	ldr	r2, [r2, #0]
- 8006910:	601a      	str	r2, [r3, #0]
+ 80068fa:	4a20      	ldr	r2, [pc, #128]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068fc:	4b1f      	ldr	r3, [pc, #124]	; (800697c <BSP_Console_Init+0x16c>)
+ 80068fe:	6812      	ldr	r2, [r2, #0]
+ 8006900:	601a      	str	r2, [r3, #0]
 
 	// Disable auto-increment Peripheral address
 	DMA1_Channel5->CCR &= ~DMA_CCR_PINC;
- 8006912:	4b1e      	ldr	r3, [pc, #120]	; (800698c <BSP_Console_Init+0x16c>)
- 8006914:	681a      	ldr	r2, [r3, #0]
- 8006916:	4b1d      	ldr	r3, [pc, #116]	; (800698c <BSP_Console_Init+0x16c>)
- 8006918:	2140      	movs	r1, #64	; 0x40
- 800691a:	438a      	bics	r2, r1
- 800691c:	601a      	str	r2, [r3, #0]
+ 8006902:	4b1e      	ldr	r3, [pc, #120]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006904:	681a      	ldr	r2, [r3, #0]
+ 8006906:	4b1d      	ldr	r3, [pc, #116]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006908:	2140      	movs	r1, #64	; 0x40
+ 800690a:	438a      	bics	r2, r1
+ 800690c:	601a      	str	r2, [r3, #0]
 
 	// Memory is rx_dma_buffer
 	DMA1_Channel5->CMAR = (uint32_t)rx_dma_buffer;
- 800691e:	4b1b      	ldr	r3, [pc, #108]	; (800698c <BSP_Console_Init+0x16c>)
- 8006920:	4a1c      	ldr	r2, [pc, #112]	; (8006994 <BSP_Console_Init+0x174>)
- 8006922:	60da      	str	r2, [r3, #12]
+ 800690e:	4b1b      	ldr	r3, [pc, #108]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006910:	4a1c      	ldr	r2, [pc, #112]	; (8006984 <BSP_Console_Init+0x174>)
+ 8006912:	60da      	str	r2, [r3, #12]
 
 	// Memory data size is 8-bit (byte)
 	DMA1_Channel5->CCR |= (0x00 <<DMA_CCR_MSIZE_Pos);
- 8006924:	4a19      	ldr	r2, [pc, #100]	; (800698c <BSP_Console_Init+0x16c>)
- 8006926:	4b19      	ldr	r3, [pc, #100]	; (800698c <BSP_Console_Init+0x16c>)
- 8006928:	6812      	ldr	r2, [r2, #0]
- 800692a:	601a      	str	r2, [r3, #0]
+ 8006914:	4a19      	ldr	r2, [pc, #100]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006916:	4b19      	ldr	r3, [pc, #100]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006918:	6812      	ldr	r2, [r2, #0]
+ 800691a:	601a      	str	r2, [r3, #0]
 
 	// Enable auto-increment Memory address
 	DMA1_Channel5->CCR |= DMA_CCR_MINC;
- 800692c:	4b17      	ldr	r3, [pc, #92]	; (800698c <BSP_Console_Init+0x16c>)
- 800692e:	681a      	ldr	r2, [r3, #0]
- 8006930:	4b16      	ldr	r3, [pc, #88]	; (800698c <BSP_Console_Init+0x16c>)
- 8006932:	2180      	movs	r1, #128	; 0x80
- 8006934:	430a      	orrs	r2, r1
- 8006936:	601a      	str	r2, [r3, #0]
+ 800691c:	4b17      	ldr	r3, [pc, #92]	; (800697c <BSP_Console_Init+0x16c>)
+ 800691e:	681a      	ldr	r2, [r3, #0]
+ 8006920:	4b16      	ldr	r3, [pc, #88]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006922:	2180      	movs	r1, #128	; 0x80
+ 8006924:	430a      	orrs	r2, r1
+ 8006926:	601a      	str	r2, [r3, #0]
 
 	// Set Memory Buffer size
 	DMA1_Channel5->CNDTR = FRAME_LENGTH;
- 8006938:	4b14      	ldr	r3, [pc, #80]	; (800698c <BSP_Console_Init+0x16c>)
- 800693a:	220e      	movs	r2, #14
- 800693c:	605a      	str	r2, [r3, #4]
+ 8006928:	4b14      	ldr	r3, [pc, #80]	; (800697c <BSP_Console_Init+0x16c>)
+ 800692a:	220e      	movs	r2, #14
+ 800692c:	605a      	str	r2, [r3, #4]
 
 	// DMA mode is circular
 	DMA1_Channel5->CCR |= DMA_CCR_CIRC;
- 800693e:	4b13      	ldr	r3, [pc, #76]	; (800698c <BSP_Console_Init+0x16c>)
- 8006940:	681a      	ldr	r2, [r3, #0]
- 8006942:	4b12      	ldr	r3, [pc, #72]	; (800698c <BSP_Console_Init+0x16c>)
- 8006944:	2120      	movs	r1, #32
- 8006946:	430a      	orrs	r2, r1
- 8006948:	601a      	str	r2, [r3, #0]
+ 800692e:	4b13      	ldr	r3, [pc, #76]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006930:	681a      	ldr	r2, [r3, #0]
+ 8006932:	4b12      	ldr	r3, [pc, #72]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006934:	2120      	movs	r1, #32
+ 8006936:	430a      	orrs	r2, r1
+ 8006938:	601a      	str	r2, [r3, #0]
 
 	// Enable DMA1 Channel 5
 	DMA1_Channel5->CCR |= DMA_CCR_EN;
- 800694a:	4b10      	ldr	r3, [pc, #64]	; (800698c <BSP_Console_Init+0x16c>)
- 800694c:	681a      	ldr	r2, [r3, #0]
- 800694e:	4b0f      	ldr	r3, [pc, #60]	; (800698c <BSP_Console_Init+0x16c>)
- 8006950:	2101      	movs	r1, #1
- 8006952:	430a      	orrs	r2, r1
- 8006954:	601a      	str	r2, [r3, #0]
+ 800693a:	4b10      	ldr	r3, [pc, #64]	; (800697c <BSP_Console_Init+0x16c>)
+ 800693c:	681a      	ldr	r2, [r3, #0]
+ 800693e:	4b0f      	ldr	r3, [pc, #60]	; (800697c <BSP_Console_Init+0x16c>)
+ 8006940:	2101      	movs	r1, #1
+ 8006942:	430a      	orrs	r2, r1
+ 8006944:	601a      	str	r2, [r3, #0]
 
 	// Enable USART2 DMA Request on RX
 	USART2->CR3 |= USART_CR3_DMAR;
- 8006956:	4b09      	ldr	r3, [pc, #36]	; (800697c <BSP_Console_Init+0x15c>)
- 8006958:	689a      	ldr	r2, [r3, #8]
- 800695a:	4b08      	ldr	r3, [pc, #32]	; (800697c <BSP_Console_Init+0x15c>)
- 800695c:	2140      	movs	r1, #64	; 0x40
- 800695e:	430a      	orrs	r2, r1
- 8006960:	609a      	str	r2, [r3, #8]
+ 8006946:	4b09      	ldr	r3, [pc, #36]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006948:	689a      	ldr	r2, [r3, #8]
+ 800694a:	4b08      	ldr	r3, [pc, #32]	; (800696c <BSP_Console_Init+0x15c>)
+ 800694c:	2140      	movs	r1, #64	; 0x40
+ 800694e:	430a      	orrs	r2, r1
+ 8006950:	609a      	str	r2, [r3, #8]
 
 	// Enable USART2
 	USART2->CR1 |= USART_CR1_UE;
- 8006962:	4b06      	ldr	r3, [pc, #24]	; (800697c <BSP_Console_Init+0x15c>)
- 8006964:	681a      	ldr	r2, [r3, #0]
- 8006966:	4b05      	ldr	r3, [pc, #20]	; (800697c <BSP_Console_Init+0x15c>)
- 8006968:	2101      	movs	r1, #1
- 800696a:	430a      	orrs	r2, r1
- 800696c:	601a      	str	r2, [r3, #0]
+ 8006952:	4b06      	ldr	r3, [pc, #24]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006954:	681a      	ldr	r2, [r3, #0]
+ 8006956:	4b05      	ldr	r3, [pc, #20]	; (800696c <BSP_Console_Init+0x15c>)
+ 8006958:	2101      	movs	r1, #1
+ 800695a:	430a      	orrs	r2, r1
+ 800695c:	601a      	str	r2, [r3, #0]
 }
- 800696e:	46c0      	nop			; (mov r8, r8)
- 8006970:	46bd      	mov	sp, r7
- 8006972:	bd80      	pop	{r7, pc}
- 8006974:	40021000 	.word	0x40021000
- 8006978:	ffff00ff 	.word	0xffff00ff
- 800697c:	40004400 	.word	0x40004400
- 8006980:	40020044 	.word	0x40020044
- 8006984:	40004428 	.word	0x40004428
- 8006988:	20003904 	.word	0x20003904
- 800698c:	40020058 	.word	0x40020058
- 8006990:	40004424 	.word	0x40004424
- 8006994:	20003914 	.word	0x20003914
+ 800695e:	46c0      	nop			; (mov r8, r8)
+ 8006960:	46bd      	mov	sp, r7
+ 8006962:	bd80      	pop	{r7, pc}
+ 8006964:	40021000 	.word	0x40021000
+ 8006968:	ffff00ff 	.word	0xffff00ff
+ 800696c:	40004400 	.word	0x40004400
+ 8006970:	40020044 	.word	0x40020044
+ 8006974:	40004428 	.word	0x40004428
+ 8006978:	20003904 	.word	0x20003904
+ 800697c:	40020058 	.word	0x40020058
+ 8006980:	40004424 	.word	0x40004424
+ 8006984:	20003914 	.word	0x20003914
 
-08006998 <FACTORY_IO_Actuators_Set>:
- * FACTORY_IO_Actuators_Set
- */
+08006988 <FACTORY_IO_Actuators_Set>:
+#include "packages.h"
+
 extern uint8_t rx_dma_buffer[FRAME_LENGTH];
 extern uint8_t tx_dma_buffer[FRAME_LENGTH];
 void FACTORY_IO_Actuators_Set(uint32_t cmd, uint32_t msk, uint8_t* buffer)
 {
- 8006998:	b580      	push	{r7, lr}
- 800699a:	b084      	sub	sp, #16
- 800699c:	af00      	add	r7, sp, #0
- 800699e:	60f8      	str	r0, [r7, #12]
- 80069a0:	60b9      	str	r1, [r7, #8]
- 80069a2:	607a      	str	r2, [r7, #4]
+ 8006988:	b580      	push	{r7, lr}
+ 800698a:	b084      	sub	sp, #16
+ 800698c:	af00      	add	r7, sp, #0
+ 800698e:	60f8      	str	r0, [r7, #12]
+ 8006990:	60b9      	str	r1, [r7, #8]
+ 8006992:	607a      	str	r2, [r7, #4]
 	static uint32_t current_actuators_state;
 
 	current_actuators_state = ((current_actuators_state & ~msk) | cmd);
- 80069a4:	68bb      	ldr	r3, [r7, #8]
- 80069a6:	43da      	mvns	r2, r3
- 80069a8:	4b18      	ldr	r3, [pc, #96]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069aa:	681b      	ldr	r3, [r3, #0]
- 80069ac:	401a      	ands	r2, r3
- 80069ae:	68fb      	ldr	r3, [r7, #12]
- 80069b0:	431a      	orrs	r2, r3
- 80069b2:	4b16      	ldr	r3, [pc, #88]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069b4:	601a      	str	r2, [r3, #0]
+ 8006994:	68bb      	ldr	r3, [r7, #8]
+ 8006996:	43da      	mvns	r2, r3
+ 8006998:	4b18      	ldr	r3, [pc, #96]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 800699a:	681b      	ldr	r3, [r3, #0]
+ 800699c:	401a      	ands	r2, r3
+ 800699e:	68fb      	ldr	r3, [r7, #12]
+ 80069a0:	431a      	orrs	r2, r3
+ 80069a2:	4b16      	ldr	r3, [pc, #88]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 80069a4:	601a      	str	r2, [r3, #0]
 
 	// Prepare frame buffer
 	buffer[0] = TAG_ACTUATORS; 							// Actuators tag
- 80069b6:	687b      	ldr	r3, [r7, #4]
- 80069b8:	22ad      	movs	r2, #173	; 0xad
- 80069ba:	701a      	strb	r2, [r3, #0]
+ 80069a6:	687b      	ldr	r3, [r7, #4]
+ 80069a8:	22ad      	movs	r2, #173	; 0xad
+ 80069aa:	701a      	strb	r2, [r3, #0]
 
 	buffer[1] = (uint8_t) (current_actuators_state & 0x000000FF);			// data byte #1
- 80069bc:	4b13      	ldr	r3, [pc, #76]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069be:	681a      	ldr	r2, [r3, #0]
- 80069c0:	687b      	ldr	r3, [r7, #4]
- 80069c2:	3301      	adds	r3, #1
- 80069c4:	b2d2      	uxtb	r2, r2
- 80069c6:	701a      	strb	r2, [r3, #0]
+ 80069ac:	4b13      	ldr	r3, [pc, #76]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 80069ae:	681a      	ldr	r2, [r3, #0]
+ 80069b0:	687b      	ldr	r3, [r7, #4]
+ 80069b2:	3301      	adds	r3, #1
+ 80069b4:	b2d2      	uxtb	r2, r2
+ 80069b6:	701a      	strb	r2, [r3, #0]
 	buffer[2] = (uint8_t)((current_actuators_state & 0x0000FF00) >>8U );	// data byte #2
- 80069c8:	4b10      	ldr	r3, [pc, #64]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069ca:	681b      	ldr	r3, [r3, #0]
- 80069cc:	0a1a      	lsrs	r2, r3, #8
- 80069ce:	687b      	ldr	r3, [r7, #4]
- 80069d0:	3302      	adds	r3, #2
- 80069d2:	b2d2      	uxtb	r2, r2
- 80069d4:	701a      	strb	r2, [r3, #0]
+ 80069b8:	4b10      	ldr	r3, [pc, #64]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 80069ba:	681b      	ldr	r3, [r3, #0]
+ 80069bc:	0a1a      	lsrs	r2, r3, #8
+ 80069be:	687b      	ldr	r3, [r7, #4]
+ 80069c0:	3302      	adds	r3, #2
+ 80069c2:	b2d2      	uxtb	r2, r2
+ 80069c4:	701a      	strb	r2, [r3, #0]
 	buffer[3] = (uint8_t)((current_actuators_state & 0x00FF0000) >>16U);	// data byte #2
- 80069d6:	4b0d      	ldr	r3, [pc, #52]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069d8:	681b      	ldr	r3, [r3, #0]
- 80069da:	0c1a      	lsrs	r2, r3, #16
- 80069dc:	687b      	ldr	r3, [r7, #4]
- 80069de:	3303      	adds	r3, #3
- 80069e0:	b2d2      	uxtb	r2, r2
- 80069e2:	701a      	strb	r2, [r3, #0]
+ 80069c6:	4b0d      	ldr	r3, [pc, #52]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 80069c8:	681b      	ldr	r3, [r3, #0]
+ 80069ca:	0c1a      	lsrs	r2, r3, #16
+ 80069cc:	687b      	ldr	r3, [r7, #4]
+ 80069ce:	3303      	adds	r3, #3
+ 80069d0:	b2d2      	uxtb	r2, r2
+ 80069d2:	701a      	strb	r2, [r3, #0]
 	buffer[4] = (uint8_t)((current_actuators_state & 0xFF000000) >>24U);	// data byte #2
- 80069e4:	4b09      	ldr	r3, [pc, #36]	; (8006a0c <FACTORY_IO_Actuators_Set+0x74>)
- 80069e6:	681b      	ldr	r3, [r3, #0]
- 80069e8:	0e1a      	lsrs	r2, r3, #24
- 80069ea:	687b      	ldr	r3, [r7, #4]
- 80069ec:	3304      	adds	r3, #4
- 80069ee:	b2d2      	uxtb	r2, r2
- 80069f0:	701a      	strb	r2, [r3, #0]
+ 80069d4:	4b09      	ldr	r3, [pc, #36]	; (80069fc <FACTORY_IO_Actuators_Set+0x74>)
+ 80069d6:	681b      	ldr	r3, [r3, #0]
+ 80069d8:	0e1a      	lsrs	r2, r3, #24
+ 80069da:	687b      	ldr	r3, [r7, #4]
+ 80069dc:	3304      	adds	r3, #4
+ 80069de:	b2d2      	uxtb	r2, r2
+ 80069e0:	701a      	strb	r2, [r3, #0]
 
 	buffer[5] = 0x00;									// CRC (not yet implemented)
- 80069f2:	687b      	ldr	r3, [r7, #4]
- 80069f4:	3305      	adds	r3, #5
- 80069f6:	2200      	movs	r2, #0
- 80069f8:	701a      	strb	r2, [r3, #0]
+ 80069e2:	687b      	ldr	r3, [r7, #4]
+ 80069e4:	3305      	adds	r3, #5
+ 80069e6:	2200      	movs	r2, #0
+ 80069e8:	701a      	strb	r2, [r3, #0]
 	buffer[6] = '\n';									// End byte
- 80069fa:	687b      	ldr	r3, [r7, #4]
- 80069fc:	3306      	adds	r3, #6
- 80069fe:	220a      	movs	r2, #10
- 8006a00:	701a      	strb	r2, [r3, #0]
+ 80069ea:	687b      	ldr	r3, [r7, #4]
+ 80069ec:	3306      	adds	r3, #6
+ 80069ee:	220a      	movs	r2, #10
+ 80069f0:	701a      	strb	r2, [r3, #0]
 }
- 8006a02:	46c0      	nop			; (mov r8, r8)
- 8006a04:	46bd      	mov	sp, r7
- 8006a06:	b004      	add	sp, #16
- 8006a08:	bd80      	pop	{r7, pc}
- 8006a0a:	46c0      	nop			; (mov r8, r8)
- 8006a0c:	2000394c 	.word	0x2000394c
+ 80069f2:	46c0      	nop			; (mov r8, r8)
+ 80069f4:	46bd      	mov	sp, r7
+ 80069f6:	b004      	add	sp, #16
+ 80069f8:	bd80      	pop	{r7, pc}
+ 80069fa:	46c0      	nop			; (mov r8, r8)
+ 80069fc:	2000394c 	.word	0x2000394c
 
-08006a10 <FACTORY_IO_Sensors_Check>:
-/*
- * FACTORY_IO_Sensors_Check
- */
+08006a00 <FACTORY_IO_Sensors_Check>:
 
 uint8_t	FACTORY_IO_Sensors_Check(uint32_t msk, uint32_t desired_state)
 {
- 8006a10:	b580      	push	{r7, lr}
- 8006a12:	b084      	sub	sp, #16
- 8006a14:	af00      	add	r7, sp, #0
- 8006a16:	6078      	str	r0, [r7, #4]
- 8006a18:	6039      	str	r1, [r7, #0]
+ 8006a00:	b580      	push	{r7, lr}
+ 8006a02:	b084      	sub	sp, #16
+ 8006a04:	af00      	add	r7, sp, #0
+ 8006a06:	6078      	str	r0, [r7, #4]
+ 8006a08:	6039      	str	r1, [r7, #0]
 	uint32_t	sstates;
 
 	// Build 32-bit sensors states representation
 	sstates = 0x00000000;
- 8006a1a:	2300      	movs	r3, #0
- 8006a1c:	60fb      	str	r3, [r7, #12]
+ 8006a0a:	2300      	movs	r3, #0
+ 8006a0c:	60fb      	str	r3, [r7, #12]
 
 	sstates |= rx_dma_buffer[1];
- 8006a1e:	4b14      	ldr	r3, [pc, #80]	; (8006a70 <FACTORY_IO_Sensors_Check+0x60>)
- 8006a20:	785b      	ldrb	r3, [r3, #1]
- 8006a22:	001a      	movs	r2, r3
- 8006a24:	68fb      	ldr	r3, [r7, #12]
- 8006a26:	4313      	orrs	r3, r2
- 8006a28:	60fb      	str	r3, [r7, #12]
+ 8006a0e:	4b14      	ldr	r3, [pc, #80]	; (8006a60 <FACTORY_IO_Sensors_Check+0x60>)
+ 8006a10:	785b      	ldrb	r3, [r3, #1]
+ 8006a12:	001a      	movs	r2, r3
+ 8006a14:	68fb      	ldr	r3, [r7, #12]
+ 8006a16:	4313      	orrs	r3, r2
+ 8006a18:	60fb      	str	r3, [r7, #12]
 	sstates |= (rx_dma_buffer[2] <<8U );
- 8006a2a:	4b11      	ldr	r3, [pc, #68]	; (8006a70 <FACTORY_IO_Sensors_Check+0x60>)
- 8006a2c:	789b      	ldrb	r3, [r3, #2]
- 8006a2e:	021b      	lsls	r3, r3, #8
- 8006a30:	001a      	movs	r2, r3
- 8006a32:	68fb      	ldr	r3, [r7, #12]
- 8006a34:	4313      	orrs	r3, r2
- 8006a36:	60fb      	str	r3, [r7, #12]
+ 8006a1a:	4b11      	ldr	r3, [pc, #68]	; (8006a60 <FACTORY_IO_Sensors_Check+0x60>)
+ 8006a1c:	789b      	ldrb	r3, [r3, #2]
+ 8006a1e:	021b      	lsls	r3, r3, #8
+ 8006a20:	001a      	movs	r2, r3
+ 8006a22:	68fb      	ldr	r3, [r7, #12]
+ 8006a24:	4313      	orrs	r3, r2
+ 8006a26:	60fb      	str	r3, [r7, #12]
 	sstates |= (rx_dma_buffer[3] <<16U);
- 8006a38:	4b0d      	ldr	r3, [pc, #52]	; (8006a70 <FACTORY_IO_Sensors_Check+0x60>)
- 8006a3a:	78db      	ldrb	r3, [r3, #3]
- 8006a3c:	041b      	lsls	r3, r3, #16
- 8006a3e:	001a      	movs	r2, r3
- 8006a40:	68fb      	ldr	r3, [r7, #12]
- 8006a42:	4313      	orrs	r3, r2
- 8006a44:	60fb      	str	r3, [r7, #12]
+ 8006a28:	4b0d      	ldr	r3, [pc, #52]	; (8006a60 <FACTORY_IO_Sensors_Check+0x60>)
+ 8006a2a:	78db      	ldrb	r3, [r3, #3]
+ 8006a2c:	041b      	lsls	r3, r3, #16
+ 8006a2e:	001a      	movs	r2, r3
+ 8006a30:	68fb      	ldr	r3, [r7, #12]
+ 8006a32:	4313      	orrs	r3, r2
+ 8006a34:	60fb      	str	r3, [r7, #12]
 	sstates |= (rx_dma_buffer[4] <<24U);
- 8006a46:	4b0a      	ldr	r3, [pc, #40]	; (8006a70 <FACTORY_IO_Sensors_Check+0x60>)
- 8006a48:	791b      	ldrb	r3, [r3, #4]
- 8006a4a:	061b      	lsls	r3, r3, #24
- 8006a4c:	001a      	movs	r2, r3
- 8006a4e:	68fb      	ldr	r3, [r7, #12]
- 8006a50:	4313      	orrs	r3, r2
- 8006a52:	60fb      	str	r3, [r7, #12]
+ 8006a36:	4b0a      	ldr	r3, [pc, #40]	; (8006a60 <FACTORY_IO_Sensors_Check+0x60>)
+ 8006a38:	791b      	ldrb	r3, [r3, #4]
+ 8006a3a:	061b      	lsls	r3, r3, #24
+ 8006a3c:	001a      	movs	r2, r3
+ 8006a3e:	68fb      	ldr	r3, [r7, #12]
+ 8006a40:	4313      	orrs	r3, r2
+ 8006a42:	60fb      	str	r3, [r7, #12]
 
 	// Perform logical comparison with mask
 	if ((sstates & msk) == desired_state)
- 8006a54:	68fb      	ldr	r3, [r7, #12]
- 8006a56:	687a      	ldr	r2, [r7, #4]
- 8006a58:	4013      	ands	r3, r2
- 8006a5a:	683a      	ldr	r2, [r7, #0]
- 8006a5c:	429a      	cmp	r2, r3
- 8006a5e:	d101      	bne.n	8006a64 <FACTORY_IO_Sensors_Check+0x54>
+ 8006a44:	68fb      	ldr	r3, [r7, #12]
+ 8006a46:	687a      	ldr	r2, [r7, #4]
+ 8006a48:	4013      	ands	r3, r2
+ 8006a4a:	683a      	ldr	r2, [r7, #0]
+ 8006a4c:	429a      	cmp	r2, r3
+ 8006a4e:	d101      	bne.n	8006a54 <FACTORY_IO_Sensors_Check+0x54>
 	{
 		return 1;
- 8006a60:	2301      	movs	r3, #1
- 8006a62:	e000      	b.n	8006a66 <FACTORY_IO_Sensors_Check+0x56>
+ 8006a50:	2301      	movs	r3, #1
+ 8006a52:	e000      	b.n	8006a56 <FACTORY_IO_Sensors_Check+0x56>
 	}
 
 	else
 	{
 		return 0;
- 8006a64:	2300      	movs	r3, #0
+ 8006a54:	2300      	movs	r3, #0
 	}
 }
- 8006a66:	0018      	movs	r0, r3
- 8006a68:	46bd      	mov	sp, r7
- 8006a6a:	b004      	add	sp, #16
- 8006a6c:	bd80      	pop	{r7, pc}
- 8006a6e:	46c0      	nop			; (mov r8, r8)
- 8006a70:	20003914 	.word	0x20003914
+ 8006a56:	0018      	movs	r0, r3
+ 8006a58:	46bd      	mov	sp, r7
+ 8006a5a:	b004      	add	sp, #16
+ 8006a5c:	bd80      	pop	{r7, pc}
+ 8006a5e:	46c0      	nop			; (mov r8, r8)
+ 8006a60:	20003914 	.word	0x20003914
 
-08006a74 <Reset_Handler>:
+08006a64 <Reset_Handler>:
 
   .section .text.Reset_Handler
   .weak Reset_Handler
   .type Reset_Handler, %function
 Reset_Handler:
   ldr   r0, =_estack
- 8006a74:	480d      	ldr	r0, [pc, #52]	; (8006aac <LoopForever+0x2>)
+ 8006a64:	480d      	ldr	r0, [pc, #52]	; (8006a9c <LoopForever+0x2>)
   mov   sp, r0          /* set stack pointer */
- 8006a76:	4685      	mov	sp, r0
+ 8006a66:	4685      	mov	sp, r0
   
 /* Call the clock system initialization function.*/
   bl  SystemInit
- 8006a78:	f000 f825 	bl	8006ac6 <SystemInit>
+ 8006a68:	f000 f825 	bl	8006ab6 <SystemInit>
 
 /* Copy the data segment initializers from flash to SRAM */
   ldr r0, =_sdata
- 8006a7c:	480c      	ldr	r0, [pc, #48]	; (8006ab0 <LoopForever+0x6>)
+ 8006a6c:	480c      	ldr	r0, [pc, #48]	; (8006aa0 <LoopForever+0x6>)
   ldr r1, =_edata
- 8006a7e:	490d      	ldr	r1, [pc, #52]	; (8006ab4 <LoopForever+0xa>)
+ 8006a6e:	490d      	ldr	r1, [pc, #52]	; (8006aa4 <LoopForever+0xa>)
   ldr r2, =_sidata
- 8006a80:	4a0d      	ldr	r2, [pc, #52]	; (8006ab8 <LoopForever+0xe>)
+ 8006a70:	4a0d      	ldr	r2, [pc, #52]	; (8006aa8 <LoopForever+0xe>)
   movs r3, #0
- 8006a82:	2300      	movs	r3, #0
+ 8006a72:	2300      	movs	r3, #0
   b LoopCopyDataInit
- 8006a84:	e002      	b.n	8006a8c <LoopCopyDataInit>
+ 8006a74:	e002      	b.n	8006a7c <LoopCopyDataInit>
 
-08006a86 <CopyDataInit>:
+08006a76 <CopyDataInit>:
 
 CopyDataInit:
   ldr r4, [r2, r3]
- 8006a86:	58d4      	ldr	r4, [r2, r3]
+ 8006a76:	58d4      	ldr	r4, [r2, r3]
   str r4, [r0, r3]
- 8006a88:	50c4      	str	r4, [r0, r3]
+ 8006a78:	50c4      	str	r4, [r0, r3]
   adds r3, r3, #4
- 8006a8a:	3304      	adds	r3, #4
+ 8006a7a:	3304      	adds	r3, #4
 
-08006a8c <LoopCopyDataInit>:
+08006a7c <LoopCopyDataInit>:
 
 LoopCopyDataInit:
   adds r4, r0, r3
- 8006a8c:	18c4      	adds	r4, r0, r3
+ 8006a7c:	18c4      	adds	r4, r0, r3
   cmp r4, r1
- 8006a8e:	428c      	cmp	r4, r1
+ 8006a7e:	428c      	cmp	r4, r1
   bcc CopyDataInit
- 8006a90:	d3f9      	bcc.n	8006a86 <CopyDataInit>
+ 8006a80:	d3f9      	bcc.n	8006a76 <CopyDataInit>
   
 /* Zero fill the bss segment. */
   ldr r2, =_sbss
- 8006a92:	4a0a      	ldr	r2, [pc, #40]	; (8006abc <LoopForever+0x12>)
+ 8006a82:	4a0a      	ldr	r2, [pc, #40]	; (8006aac <LoopForever+0x12>)
   ldr r4, =_ebss
- 8006a94:	4c0a      	ldr	r4, [pc, #40]	; (8006ac0 <LoopForever+0x16>)
+ 8006a84:	4c0a      	ldr	r4, [pc, #40]	; (8006ab0 <LoopForever+0x16>)
   movs r3, #0
- 8006a96:	2300      	movs	r3, #0
+ 8006a86:	2300      	movs	r3, #0
   b LoopFillZerobss
- 8006a98:	e001      	b.n	8006a9e <LoopFillZerobss>
+ 8006a88:	e001      	b.n	8006a8e <LoopFillZerobss>
 
-08006a9a <FillZerobss>:
+08006a8a <FillZerobss>:
 
 FillZerobss:
   str  r3, [r2]
- 8006a9a:	6013      	str	r3, [r2, #0]
+ 8006a8a:	6013      	str	r3, [r2, #0]
   adds r2, r2, #4
- 8006a9c:	3204      	adds	r2, #4
+ 8006a8c:	3204      	adds	r2, #4
 
-08006a9e <LoopFillZerobss>:
+08006a8e <LoopFillZerobss>:
 
 LoopFillZerobss:
   cmp r2, r4
- 8006a9e:	42a2      	cmp	r2, r4
+ 8006a8e:	42a2      	cmp	r2, r4
   bcc FillZerobss
- 8006aa0:	d3fb      	bcc.n	8006a9a <FillZerobss>
+ 8006a90:	d3fb      	bcc.n	8006a8a <FillZerobss>
 
 /* Call static constructors */
   bl __libc_init_array
- 8006aa2:	f000 f8a3 	bl	8006bec <__libc_init_array>
+ 8006a92:	f000 f8a3 	bl	8006bdc <__libc_init_array>
 /* Call the application's entry point.*/
   bl main
- 8006aa6:	f7fe feb7 	bl	8005818 <main>
+ 8006a96:	f7fe febf 	bl	8005818 <main>
 
-08006aaa <LoopForever>:
+08006a9a <LoopForever>:
 
 LoopForever:
     b LoopForever
- 8006aaa:	e7fe      	b.n	8006aaa <LoopForever>
+ 8006a9a:	e7fe      	b.n	8006a9a <LoopForever>
   ldr   r0, =_estack
- 8006aac:	20004000 	.word	0x20004000
+ 8006a9c:	20004000 	.word	0x20004000
   ldr r0, =_sdata
- 8006ab0:	20000000 	.word	0x20000000
+ 8006aa0:	20000000 	.word	0x20000000
   ldr r1, =_edata
- 8006ab4:	2000001c 	.word	0x2000001c
+ 8006aa4:	2000001c 	.word	0x2000001c
   ldr r2, =_sidata
- 8006ab8:	08007084 	.word	0x08007084
+ 8006aa8:	08007074 	.word	0x08007074
   ldr r2, =_sbss
- 8006abc:	2000001c 	.word	0x2000001c
+ 8006aac:	2000001c 	.word	0x2000001c
   ldr r4, =_ebss
- 8006ac0:	20003950 	.word	0x20003950
+ 8006ab0:	20003950 	.word	0x20003950
 
-08006ac4 <ADC1_COMP_IRQHandler>:
+08006ab4 <ADC1_COMP_IRQHandler>:
  * @retval : None
 */
     .section .text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
   b Infinite_Loop
- 8006ac4:	e7fe      	b.n	8006ac4 <ADC1_COMP_IRQHandler>
+ 8006ab4:	e7fe      	b.n	8006ab4 <ADC1_COMP_IRQHandler>
 
-08006ac6 <SystemInit>:
+08006ab6 <SystemInit>:
   * @brief  Setup the microcontroller system
   * @param  None
   * @retval None
   */
 void SystemInit(void)
 {
- 8006ac6:	b580      	push	{r7, lr}
- 8006ac8:	af00      	add	r7, sp, #0
+ 8006ab6:	b580      	push	{r7, lr}
+ 8006ab8:	af00      	add	r7, sp, #0
                          before branch to main program. This call is made inside
                          the "startup_stm32f0xx.s" file.
                          User can setups the default system clock (System clock source, PLL Multiplier
                          and Divider factors, AHB/APBx prescalers and Flash settings).
    */
 }
- 8006aca:	46c0      	nop			; (mov r8, r8)
- 8006acc:	46bd      	mov	sp, r7
- 8006ace:	bd80      	pop	{r7, pc}
+ 8006aba:	46c0      	nop			; (mov r8, r8)
+ 8006abc:	46bd      	mov	sp, r7
+ 8006abe:	bd80      	pop	{r7, pc}
 
-08006ad0 <SystemCoreClockUpdate>:
+08006ac0 <SystemCoreClockUpdate>:
   *
   * @param  None
   * @retval None
   */
 void SystemCoreClockUpdate (void)
 {
- 8006ad0:	b580      	push	{r7, lr}
- 8006ad2:	b084      	sub	sp, #16
- 8006ad4:	af00      	add	r7, sp, #0
+ 8006ac0:	b580      	push	{r7, lr}
+ 8006ac2:	b084      	sub	sp, #16
+ 8006ac4:	af00      	add	r7, sp, #0
   uint32_t tmp = 0, pllmull = 0, pllsource = 0, predivfactor = 0;
- 8006ad6:	2300      	movs	r3, #0
- 8006ad8:	60fb      	str	r3, [r7, #12]
- 8006ada:	2300      	movs	r3, #0
- 8006adc:	60bb      	str	r3, [r7, #8]
- 8006ade:	2300      	movs	r3, #0
- 8006ae0:	607b      	str	r3, [r7, #4]
- 8006ae2:	2300      	movs	r3, #0
- 8006ae4:	603b      	str	r3, [r7, #0]
+ 8006ac6:	2300      	movs	r3, #0
+ 8006ac8:	60fb      	str	r3, [r7, #12]
+ 8006aca:	2300      	movs	r3, #0
+ 8006acc:	60bb      	str	r3, [r7, #8]
+ 8006ace:	2300      	movs	r3, #0
+ 8006ad0:	607b      	str	r3, [r7, #4]
+ 8006ad2:	2300      	movs	r3, #0
+ 8006ad4:	603b      	str	r3, [r7, #0]
 
   /* Get SYSCLK source -------------------------------------------------------*/
   tmp = RCC->CFGR & RCC_CFGR_SWS;
- 8006ae6:	4b38      	ldr	r3, [pc, #224]	; (8006bc8 <SystemCoreClockUpdate+0xf8>)
- 8006ae8:	685b      	ldr	r3, [r3, #4]
- 8006aea:	220c      	movs	r2, #12
- 8006aec:	4013      	ands	r3, r2
- 8006aee:	60fb      	str	r3, [r7, #12]
+ 8006ad6:	4b38      	ldr	r3, [pc, #224]	; (8006bb8 <SystemCoreClockUpdate+0xf8>)
+ 8006ad8:	685b      	ldr	r3, [r3, #4]
+ 8006ada:	220c      	movs	r2, #12
+ 8006adc:	4013      	ands	r3, r2
+ 8006ade:	60fb      	str	r3, [r7, #12]
 
   switch (tmp)
- 8006af0:	68fb      	ldr	r3, [r7, #12]
- 8006af2:	2b08      	cmp	r3, #8
- 8006af4:	d011      	beq.n	8006b1a <SystemCoreClockUpdate+0x4a>
- 8006af6:	68fb      	ldr	r3, [r7, #12]
- 8006af8:	2b08      	cmp	r3, #8
- 8006afa:	d84f      	bhi.n	8006b9c <SystemCoreClockUpdate+0xcc>
- 8006afc:	68fb      	ldr	r3, [r7, #12]
- 8006afe:	2b00      	cmp	r3, #0
- 8006b00:	d003      	beq.n	8006b0a <SystemCoreClockUpdate+0x3a>
- 8006b02:	68fb      	ldr	r3, [r7, #12]
- 8006b04:	2b04      	cmp	r3, #4
- 8006b06:	d004      	beq.n	8006b12 <SystemCoreClockUpdate+0x42>
- 8006b08:	e048      	b.n	8006b9c <SystemCoreClockUpdate+0xcc>
+ 8006ae0:	68fb      	ldr	r3, [r7, #12]
+ 8006ae2:	2b08      	cmp	r3, #8
+ 8006ae4:	d011      	beq.n	8006b0a <SystemCoreClockUpdate+0x4a>
+ 8006ae6:	68fb      	ldr	r3, [r7, #12]
+ 8006ae8:	2b08      	cmp	r3, #8
+ 8006aea:	d84f      	bhi.n	8006b8c <SystemCoreClockUpdate+0xcc>
+ 8006aec:	68fb      	ldr	r3, [r7, #12]
+ 8006aee:	2b00      	cmp	r3, #0
+ 8006af0:	d003      	beq.n	8006afa <SystemCoreClockUpdate+0x3a>
+ 8006af2:	68fb      	ldr	r3, [r7, #12]
+ 8006af4:	2b04      	cmp	r3, #4
+ 8006af6:	d004      	beq.n	8006b02 <SystemCoreClockUpdate+0x42>
+ 8006af8:	e048      	b.n	8006b8c <SystemCoreClockUpdate+0xcc>
   {
     case RCC_CFGR_SWS_HSI:  /* HSI used as system clock */
       SystemCoreClock = HSI_VALUE;
- 8006b0a:	4b30      	ldr	r3, [pc, #192]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b0c:	4a30      	ldr	r2, [pc, #192]	; (8006bd0 <SystemCoreClockUpdate+0x100>)
- 8006b0e:	601a      	str	r2, [r3, #0]
+ 8006afa:	4b30      	ldr	r3, [pc, #192]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006afc:	4a30      	ldr	r2, [pc, #192]	; (8006bc0 <SystemCoreClockUpdate+0x100>)
+ 8006afe:	601a      	str	r2, [r3, #0]
       break;
- 8006b10:	e048      	b.n	8006ba4 <SystemCoreClockUpdate+0xd4>
+ 8006b00:	e048      	b.n	8006b94 <SystemCoreClockUpdate+0xd4>
     case RCC_CFGR_SWS_HSE:  /* HSE used as system clock */
       SystemCoreClock = HSE_VALUE;
- 8006b12:	4b2e      	ldr	r3, [pc, #184]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b14:	4a2e      	ldr	r2, [pc, #184]	; (8006bd0 <SystemCoreClockUpdate+0x100>)
- 8006b16:	601a      	str	r2, [r3, #0]
+ 8006b02:	4b2e      	ldr	r3, [pc, #184]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006b04:	4a2e      	ldr	r2, [pc, #184]	; (8006bc0 <SystemCoreClockUpdate+0x100>)
+ 8006b06:	601a      	str	r2, [r3, #0]
       break;
- 8006b18:	e044      	b.n	8006ba4 <SystemCoreClockUpdate+0xd4>
+ 8006b08:	e044      	b.n	8006b94 <SystemCoreClockUpdate+0xd4>
     case RCC_CFGR_SWS_PLL:  /* PLL used as system clock */
       /* Get PLL clock source and multiplication factor ----------------------*/
       pllmull = RCC->CFGR & RCC_CFGR_PLLMUL;
- 8006b1a:	4b2b      	ldr	r3, [pc, #172]	; (8006bc8 <SystemCoreClockUpdate+0xf8>)
- 8006b1c:	685a      	ldr	r2, [r3, #4]
- 8006b1e:	23f0      	movs	r3, #240	; 0xf0
- 8006b20:	039b      	lsls	r3, r3, #14
- 8006b22:	4013      	ands	r3, r2
- 8006b24:	60bb      	str	r3, [r7, #8]
+ 8006b0a:	4b2b      	ldr	r3, [pc, #172]	; (8006bb8 <SystemCoreClockUpdate+0xf8>)
+ 8006b0c:	685a      	ldr	r2, [r3, #4]
+ 8006b0e:	23f0      	movs	r3, #240	; 0xf0
+ 8006b10:	039b      	lsls	r3, r3, #14
+ 8006b12:	4013      	ands	r3, r2
+ 8006b14:	60bb      	str	r3, [r7, #8]
       pllsource = RCC->CFGR & RCC_CFGR_PLLSRC;
- 8006b26:	4b28      	ldr	r3, [pc, #160]	; (8006bc8 <SystemCoreClockUpdate+0xf8>)
- 8006b28:	685a      	ldr	r2, [r3, #4]
- 8006b2a:	23c0      	movs	r3, #192	; 0xc0
- 8006b2c:	025b      	lsls	r3, r3, #9
- 8006b2e:	4013      	ands	r3, r2
- 8006b30:	607b      	str	r3, [r7, #4]
+ 8006b16:	4b28      	ldr	r3, [pc, #160]	; (8006bb8 <SystemCoreClockUpdate+0xf8>)
+ 8006b18:	685a      	ldr	r2, [r3, #4]
+ 8006b1a:	23c0      	movs	r3, #192	; 0xc0
+ 8006b1c:	025b      	lsls	r3, r3, #9
+ 8006b1e:	4013      	ands	r3, r2
+ 8006b20:	607b      	str	r3, [r7, #4]
       pllmull = ( pllmull >> 18) + 2;
- 8006b32:	68bb      	ldr	r3, [r7, #8]
- 8006b34:	0c9b      	lsrs	r3, r3, #18
- 8006b36:	3302      	adds	r3, #2
- 8006b38:	60bb      	str	r3, [r7, #8]
+ 8006b22:	68bb      	ldr	r3, [r7, #8]
+ 8006b24:	0c9b      	lsrs	r3, r3, #18
+ 8006b26:	3302      	adds	r3, #2
+ 8006b28:	60bb      	str	r3, [r7, #8]
       predivfactor = (RCC->CFGR2 & RCC_CFGR2_PREDIV) + 1;
- 8006b3a:	4b23      	ldr	r3, [pc, #140]	; (8006bc8 <SystemCoreClockUpdate+0xf8>)
- 8006b3c:	6adb      	ldr	r3, [r3, #44]	; 0x2c
- 8006b3e:	220f      	movs	r2, #15
- 8006b40:	4013      	ands	r3, r2
- 8006b42:	3301      	adds	r3, #1
- 8006b44:	603b      	str	r3, [r7, #0]
+ 8006b2a:	4b23      	ldr	r3, [pc, #140]	; (8006bb8 <SystemCoreClockUpdate+0xf8>)
+ 8006b2c:	6adb      	ldr	r3, [r3, #44]	; 0x2c
+ 8006b2e:	220f      	movs	r2, #15
+ 8006b30:	4013      	ands	r3, r2
+ 8006b32:	3301      	adds	r3, #1
+ 8006b34:	603b      	str	r3, [r7, #0]
 
       if (pllsource == RCC_CFGR_PLLSRC_HSE_PREDIV)
- 8006b46:	687a      	ldr	r2, [r7, #4]
- 8006b48:	2380      	movs	r3, #128	; 0x80
- 8006b4a:	025b      	lsls	r3, r3, #9
- 8006b4c:	429a      	cmp	r2, r3
- 8006b4e:	d10a      	bne.n	8006b66 <SystemCoreClockUpdate+0x96>
+ 8006b36:	687a      	ldr	r2, [r7, #4]
+ 8006b38:	2380      	movs	r3, #128	; 0x80
+ 8006b3a:	025b      	lsls	r3, r3, #9
+ 8006b3c:	429a      	cmp	r2, r3
+ 8006b3e:	d10a      	bne.n	8006b56 <SystemCoreClockUpdate+0x96>
       {
         /* HSE used as PLL clock source : SystemCoreClock = HSE/PREDIV * PLLMUL */
         SystemCoreClock = (HSE_VALUE/predivfactor) * pllmull;
- 8006b50:	6839      	ldr	r1, [r7, #0]
- 8006b52:	481f      	ldr	r0, [pc, #124]	; (8006bd0 <SystemCoreClockUpdate+0x100>)
- 8006b54:	f7f9 fad8 	bl	8000108 <__udivsi3>
- 8006b58:	0003      	movs	r3, r0
- 8006b5a:	001a      	movs	r2, r3
- 8006b5c:	68bb      	ldr	r3, [r7, #8]
- 8006b5e:	435a      	muls	r2, r3
- 8006b60:	4b1a      	ldr	r3, [pc, #104]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b62:	601a      	str	r2, [r3, #0]
+ 8006b40:	6839      	ldr	r1, [r7, #0]
+ 8006b42:	481f      	ldr	r0, [pc, #124]	; (8006bc0 <SystemCoreClockUpdate+0x100>)
+ 8006b44:	f7f9 fae0 	bl	8000108 <__udivsi3>
+ 8006b48:	0003      	movs	r3, r0
+ 8006b4a:	001a      	movs	r2, r3
+ 8006b4c:	68bb      	ldr	r3, [r7, #8]
+ 8006b4e:	435a      	muls	r2, r3
+ 8006b50:	4b1a      	ldr	r3, [pc, #104]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006b52:	601a      	str	r2, [r3, #0]
         SystemCoreClock = (HSI_VALUE >> 1) * pllmull;
 #endif /* STM32F042x6 || STM32F048xx || STM32F070x6 || 
           STM32F071xB || STM32F072xB || STM32F078xx || STM32F070xB ||
           STM32F091xC || STM32F098xx || STM32F030xC */
 	  }
       break;
- 8006b64:	e01e      	b.n	8006ba4 <SystemCoreClockUpdate+0xd4>
+ 8006b54:	e01e      	b.n	8006b94 <SystemCoreClockUpdate+0xd4>
       else if (pllsource == RCC_CFGR_PLLSRC_HSI48_PREDIV)
- 8006b66:	687a      	ldr	r2, [r7, #4]
- 8006b68:	23c0      	movs	r3, #192	; 0xc0
- 8006b6a:	025b      	lsls	r3, r3, #9
- 8006b6c:	429a      	cmp	r2, r3
- 8006b6e:	d10a      	bne.n	8006b86 <SystemCoreClockUpdate+0xb6>
+ 8006b56:	687a      	ldr	r2, [r7, #4]
+ 8006b58:	23c0      	movs	r3, #192	; 0xc0
+ 8006b5a:	025b      	lsls	r3, r3, #9
+ 8006b5c:	429a      	cmp	r2, r3
+ 8006b5e:	d10a      	bne.n	8006b76 <SystemCoreClockUpdate+0xb6>
         SystemCoreClock = (HSI48_VALUE/predivfactor) * pllmull;
- 8006b70:	6839      	ldr	r1, [r7, #0]
- 8006b72:	4818      	ldr	r0, [pc, #96]	; (8006bd4 <SystemCoreClockUpdate+0x104>)
- 8006b74:	f7f9 fac8 	bl	8000108 <__udivsi3>
- 8006b78:	0003      	movs	r3, r0
- 8006b7a:	001a      	movs	r2, r3
- 8006b7c:	68bb      	ldr	r3, [r7, #8]
- 8006b7e:	435a      	muls	r2, r3
- 8006b80:	4b12      	ldr	r3, [pc, #72]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b82:	601a      	str	r2, [r3, #0]
+ 8006b60:	6839      	ldr	r1, [r7, #0]
+ 8006b62:	4818      	ldr	r0, [pc, #96]	; (8006bc4 <SystemCoreClockUpdate+0x104>)
+ 8006b64:	f7f9 fad0 	bl	8000108 <__udivsi3>
+ 8006b68:	0003      	movs	r3, r0
+ 8006b6a:	001a      	movs	r2, r3
+ 8006b6c:	68bb      	ldr	r3, [r7, #8]
+ 8006b6e:	435a      	muls	r2, r3
+ 8006b70:	4b12      	ldr	r3, [pc, #72]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006b72:	601a      	str	r2, [r3, #0]
       break;
- 8006b84:	e00e      	b.n	8006ba4 <SystemCoreClockUpdate+0xd4>
+ 8006b74:	e00e      	b.n	8006b94 <SystemCoreClockUpdate+0xd4>
         SystemCoreClock = (HSI_VALUE/predivfactor) * pllmull;
- 8006b86:	6839      	ldr	r1, [r7, #0]
- 8006b88:	4811      	ldr	r0, [pc, #68]	; (8006bd0 <SystemCoreClockUpdate+0x100>)
- 8006b8a:	f7f9 fabd 	bl	8000108 <__udivsi3>
- 8006b8e:	0003      	movs	r3, r0
- 8006b90:	001a      	movs	r2, r3
- 8006b92:	68bb      	ldr	r3, [r7, #8]
- 8006b94:	435a      	muls	r2, r3
- 8006b96:	4b0d      	ldr	r3, [pc, #52]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b98:	601a      	str	r2, [r3, #0]
+ 8006b76:	6839      	ldr	r1, [r7, #0]
+ 8006b78:	4811      	ldr	r0, [pc, #68]	; (8006bc0 <SystemCoreClockUpdate+0x100>)
+ 8006b7a:	f7f9 fac5 	bl	8000108 <__udivsi3>
+ 8006b7e:	0003      	movs	r3, r0
+ 8006b80:	001a      	movs	r2, r3
+ 8006b82:	68bb      	ldr	r3, [r7, #8]
+ 8006b84:	435a      	muls	r2, r3
+ 8006b86:	4b0d      	ldr	r3, [pc, #52]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006b88:	601a      	str	r2, [r3, #0]
       break;
- 8006b9a:	e003      	b.n	8006ba4 <SystemCoreClockUpdate+0xd4>
+ 8006b8a:	e003      	b.n	8006b94 <SystemCoreClockUpdate+0xd4>
     default: /* HSI used as system clock */
       SystemCoreClock = HSI_VALUE;
- 8006b9c:	4b0b      	ldr	r3, [pc, #44]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006b9e:	4a0c      	ldr	r2, [pc, #48]	; (8006bd0 <SystemCoreClockUpdate+0x100>)
- 8006ba0:	601a      	str	r2, [r3, #0]
+ 8006b8c:	4b0b      	ldr	r3, [pc, #44]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006b8e:	4a0c      	ldr	r2, [pc, #48]	; (8006bc0 <SystemCoreClockUpdate+0x100>)
+ 8006b90:	601a      	str	r2, [r3, #0]
       break;
- 8006ba2:	46c0      	nop			; (mov r8, r8)
+ 8006b92:	46c0      	nop			; (mov r8, r8)
   }
   /* Compute HCLK clock frequency ----------------*/
   /* Get HCLK prescaler */
   tmp = AHBPrescTable[((RCC->CFGR & RCC_CFGR_HPRE) >> 4)];
- 8006ba4:	4b08      	ldr	r3, [pc, #32]	; (8006bc8 <SystemCoreClockUpdate+0xf8>)
- 8006ba6:	685b      	ldr	r3, [r3, #4]
- 8006ba8:	091b      	lsrs	r3, r3, #4
- 8006baa:	220f      	movs	r2, #15
- 8006bac:	4013      	ands	r3, r2
- 8006bae:	4a0a      	ldr	r2, [pc, #40]	; (8006bd8 <SystemCoreClockUpdate+0x108>)
- 8006bb0:	5cd3      	ldrb	r3, [r2, r3]
- 8006bb2:	60fb      	str	r3, [r7, #12]
+ 8006b94:	4b08      	ldr	r3, [pc, #32]	; (8006bb8 <SystemCoreClockUpdate+0xf8>)
+ 8006b96:	685b      	ldr	r3, [r3, #4]
+ 8006b98:	091b      	lsrs	r3, r3, #4
+ 8006b9a:	220f      	movs	r2, #15
+ 8006b9c:	4013      	ands	r3, r2
+ 8006b9e:	4a0a      	ldr	r2, [pc, #40]	; (8006bc8 <SystemCoreClockUpdate+0x108>)
+ 8006ba0:	5cd3      	ldrb	r3, [r2, r3]
+ 8006ba2:	60fb      	str	r3, [r7, #12]
   /* HCLK clock frequency */
   SystemCoreClock >>= tmp;
- 8006bb4:	4b05      	ldr	r3, [pc, #20]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006bb6:	681a      	ldr	r2, [r3, #0]
- 8006bb8:	68fb      	ldr	r3, [r7, #12]
- 8006bba:	40da      	lsrs	r2, r3
- 8006bbc:	4b03      	ldr	r3, [pc, #12]	; (8006bcc <SystemCoreClockUpdate+0xfc>)
- 8006bbe:	601a      	str	r2, [r3, #0]
+ 8006ba4:	4b05      	ldr	r3, [pc, #20]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006ba6:	681a      	ldr	r2, [r3, #0]
+ 8006ba8:	68fb      	ldr	r3, [r7, #12]
+ 8006baa:	40da      	lsrs	r2, r3
+ 8006bac:	4b03      	ldr	r3, [pc, #12]	; (8006bbc <SystemCoreClockUpdate+0xfc>)
+ 8006bae:	601a      	str	r2, [r3, #0]
 }
- 8006bc0:	46c0      	nop			; (mov r8, r8)
- 8006bc2:	46bd      	mov	sp, r7
- 8006bc4:	b004      	add	sp, #16
- 8006bc6:	bd80      	pop	{r7, pc}
- 8006bc8:	40021000 	.word	0x40021000
- 8006bcc:	20000018 	.word	0x20000018
- 8006bd0:	007a1200 	.word	0x007a1200
- 8006bd4:	02dc6c00 	.word	0x02dc6c00
- 8006bd8:	0800706c 	.word	0x0800706c
+ 8006bb0:	46c0      	nop			; (mov r8, r8)
+ 8006bb2:	46bd      	mov	sp, r7
+ 8006bb4:	b004      	add	sp, #16
+ 8006bb6:	bd80      	pop	{r7, pc}
+ 8006bb8:	40021000 	.word	0x40021000
+ 8006bbc:	20000018 	.word	0x20000018
+ 8006bc0:	007a1200 	.word	0x007a1200
+ 8006bc4:	02dc6c00 	.word	0x02dc6c00
+ 8006bc8:	0800705c 	.word	0x0800705c
 
-08006bdc <memset>:
- 8006bdc:	0003      	movs	r3, r0
- 8006bde:	1882      	adds	r2, r0, r2
- 8006be0:	4293      	cmp	r3, r2
- 8006be2:	d100      	bne.n	8006be6 <memset+0xa>
- 8006be4:	4770      	bx	lr
- 8006be6:	7019      	strb	r1, [r3, #0]
- 8006be8:	3301      	adds	r3, #1
- 8006bea:	e7f9      	b.n	8006be0 <memset+0x4>
+08006bcc <memset>:
+ 8006bcc:	0003      	movs	r3, r0
+ 8006bce:	1882      	adds	r2, r0, r2
+ 8006bd0:	4293      	cmp	r3, r2
+ 8006bd2:	d100      	bne.n	8006bd6 <memset+0xa>
+ 8006bd4:	4770      	bx	lr
+ 8006bd6:	7019      	strb	r1, [r3, #0]
+ 8006bd8:	3301      	adds	r3, #1
+ 8006bda:	e7f9      	b.n	8006bd0 <memset+0x4>
 
-08006bec <__libc_init_array>:
- 8006bec:	b570      	push	{r4, r5, r6, lr}
- 8006bee:	2600      	movs	r6, #0
- 8006bf0:	4c0c      	ldr	r4, [pc, #48]	; (8006c24 <__libc_init_array+0x38>)
- 8006bf2:	4d0d      	ldr	r5, [pc, #52]	; (8006c28 <__libc_init_array+0x3c>)
- 8006bf4:	1b64      	subs	r4, r4, r5
- 8006bf6:	10a4      	asrs	r4, r4, #2
- 8006bf8:	42a6      	cmp	r6, r4
- 8006bfa:	d109      	bne.n	8006c10 <__libc_init_array+0x24>
- 8006bfc:	2600      	movs	r6, #0
- 8006bfe:	f000 f823 	bl	8006c48 <_init>
- 8006c02:	4c0a      	ldr	r4, [pc, #40]	; (8006c2c <__libc_init_array+0x40>)
- 8006c04:	4d0a      	ldr	r5, [pc, #40]	; (8006c30 <__libc_init_array+0x44>)
- 8006c06:	1b64      	subs	r4, r4, r5
- 8006c08:	10a4      	asrs	r4, r4, #2
- 8006c0a:	42a6      	cmp	r6, r4
- 8006c0c:	d105      	bne.n	8006c1a <__libc_init_array+0x2e>
- 8006c0e:	bd70      	pop	{r4, r5, r6, pc}
- 8006c10:	00b3      	lsls	r3, r6, #2
- 8006c12:	58eb      	ldr	r3, [r5, r3]
- 8006c14:	4798      	blx	r3
- 8006c16:	3601      	adds	r6, #1
- 8006c18:	e7ee      	b.n	8006bf8 <__libc_init_array+0xc>
- 8006c1a:	00b3      	lsls	r3, r6, #2
- 8006c1c:	58eb      	ldr	r3, [r5, r3]
- 8006c1e:	4798      	blx	r3
- 8006c20:	3601      	adds	r6, #1
- 8006c22:	e7f2      	b.n	8006c0a <__libc_init_array+0x1e>
- 8006c24:	0800707c 	.word	0x0800707c
- 8006c28:	0800707c 	.word	0x0800707c
- 8006c2c:	08007080 	.word	0x08007080
- 8006c30:	0800707c 	.word	0x0800707c
+08006bdc <__libc_init_array>:
+ 8006bdc:	b570      	push	{r4, r5, r6, lr}
+ 8006bde:	2600      	movs	r6, #0
+ 8006be0:	4c0c      	ldr	r4, [pc, #48]	; (8006c14 <__libc_init_array+0x38>)
+ 8006be2:	4d0d      	ldr	r5, [pc, #52]	; (8006c18 <__libc_init_array+0x3c>)
+ 8006be4:	1b64      	subs	r4, r4, r5
+ 8006be6:	10a4      	asrs	r4, r4, #2
+ 8006be8:	42a6      	cmp	r6, r4
+ 8006bea:	d109      	bne.n	8006c00 <__libc_init_array+0x24>
+ 8006bec:	2600      	movs	r6, #0
+ 8006bee:	f000 f823 	bl	8006c38 <_init>
+ 8006bf2:	4c0a      	ldr	r4, [pc, #40]	; (8006c1c <__libc_init_array+0x40>)
+ 8006bf4:	4d0a      	ldr	r5, [pc, #40]	; (8006c20 <__libc_init_array+0x44>)
+ 8006bf6:	1b64      	subs	r4, r4, r5
+ 8006bf8:	10a4      	asrs	r4, r4, #2
+ 8006bfa:	42a6      	cmp	r6, r4
+ 8006bfc:	d105      	bne.n	8006c0a <__libc_init_array+0x2e>
+ 8006bfe:	bd70      	pop	{r4, r5, r6, pc}
+ 8006c00:	00b3      	lsls	r3, r6, #2
+ 8006c02:	58eb      	ldr	r3, [r5, r3]
+ 8006c04:	4798      	blx	r3
+ 8006c06:	3601      	adds	r6, #1
+ 8006c08:	e7ee      	b.n	8006be8 <__libc_init_array+0xc>
+ 8006c0a:	00b3      	lsls	r3, r6, #2
+ 8006c0c:	58eb      	ldr	r3, [r5, r3]
+ 8006c0e:	4798      	blx	r3
+ 8006c10:	3601      	adds	r6, #1
+ 8006c12:	e7f2      	b.n	8006bfa <__libc_init_array+0x1e>
+ 8006c14:	0800706c 	.word	0x0800706c
+ 8006c18:	0800706c 	.word	0x0800706c
+ 8006c1c:	08007070 	.word	0x08007070
+ 8006c20:	0800706c 	.word	0x0800706c
 
-08006c34 <memcpy>:
- 8006c34:	2300      	movs	r3, #0
- 8006c36:	b510      	push	{r4, lr}
- 8006c38:	429a      	cmp	r2, r3
- 8006c3a:	d100      	bne.n	8006c3e <memcpy+0xa>
- 8006c3c:	bd10      	pop	{r4, pc}
- 8006c3e:	5ccc      	ldrb	r4, [r1, r3]
- 8006c40:	54c4      	strb	r4, [r0, r3]
- 8006c42:	3301      	adds	r3, #1
- 8006c44:	e7f8      	b.n	8006c38 <memcpy+0x4>
+08006c24 <memcpy>:
+ 8006c24:	2300      	movs	r3, #0
+ 8006c26:	b510      	push	{r4, lr}
+ 8006c28:	429a      	cmp	r2, r3
+ 8006c2a:	d100      	bne.n	8006c2e <memcpy+0xa>
+ 8006c2c:	bd10      	pop	{r4, pc}
+ 8006c2e:	5ccc      	ldrb	r4, [r1, r3]
+ 8006c30:	54c4      	strb	r4, [r0, r3]
+ 8006c32:	3301      	adds	r3, #1
+ 8006c34:	e7f8      	b.n	8006c28 <memcpy+0x4>
 	...
 
-08006c48 <_init>:
- 8006c48:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
- 8006c4a:	46c0      	nop			; (mov r8, r8)
- 8006c4c:	bcf8      	pop	{r3, r4, r5, r6, r7}
- 8006c4e:	bc08      	pop	{r3}
- 8006c50:	469e      	mov	lr, r3
- 8006c52:	4770      	bx	lr
+08006c38 <_init>:
+ 8006c38:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8006c3a:	46c0      	nop			; (mov r8, r8)
+ 8006c3c:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 8006c3e:	bc08      	pop	{r3}
+ 8006c40:	469e      	mov	lr, r3
+ 8006c42:	4770      	bx	lr
 
-08006c54 <_fini>:
- 8006c54:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
- 8006c56:	46c0      	nop			; (mov r8, r8)
- 8006c58:	bcf8      	pop	{r3, r4, r5, r6, r7}
- 8006c5a:	bc08      	pop	{r3}
- 8006c5c:	469e      	mov	lr, r3
- 8006c5e:	4770      	bx	lr
+08006c44 <_fini>:
+ 8006c44:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8006c46:	46c0      	nop			; (mov r8, r8)
+ 8006c48:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 8006c4a:	bc08      	pop	{r3}
+ 8006c4c:	469e      	mov	lr, r3
+ 8006c4e:	4770      	bx	lr

@@ -1,13 +1,8 @@
 #ifndef APP_INC_MAIN_H_
 #define APP_INC_MAIN_H_
 
-// Device header
 #include "stm32f0xx.h"
-
-// BSP functions
 #include "bsp.h"
-
-// FreeRTOS headers
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"

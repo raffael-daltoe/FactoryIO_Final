@@ -246,11 +246,6 @@ void vPush(void *pvParameters) {
     while (1) {
         // Acquire the Mutex
         xSemaphoreTake(M_Push, portMAX_DELAY);
-
-        // The stock allows managing 3 batches of cartons to push
-        // When the stock is 0, the mutex is released to "etau" so that it
-        // releases the 6 cartons. Once that is done, the current task
-        // (vPush) regains the Mutex, resets the stock to 3, and resumes its cycle.
         while (stock_poussoir != 0) {
             stock_poussoir--;
 
@@ -667,10 +662,10 @@ static void SystemClock_Config()
 	RCC->CFGR &= ~RCC_CFGR_PLLSRC_Msk;
 	RCC->CFGR |= (0x08 <<RCC_CFGR_PLLSRC_Pos);
 
-	// Set PLL PREDIV to /1
+	// Set PLL PREDIV to /8
 	RCC->CFGR2 = RCC_CFGR_HPRE_DIV8;
 
-	// Set PLL MUL to x6
+	// Set PLL MUL to x1
 	RCC->CFGR &= ~RCC_CFGR_PLLMUL_Msk;
 	RCC->CFGR |= (0x00 <<RCC_CFGR_PLLMUL_Pos);
 
