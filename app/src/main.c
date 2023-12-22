@@ -106,14 +106,23 @@ int main() {
     // Default synchronization to 1
     xEventGroupSetBits(taskSync, BOXES_SENDED);
 
-    // Create Tasks // 256 bytes allocated for each task
-    xTaskCreate(vSendBoxes, "vSendBoxes", 128, NULL, 5, NULL); 
-    xTaskCreate(vPush, "vPush", 128, NULL, 4, NULL);
-    xTaskCreate(vPalete, "vPalete", 128, NULL, 1, NULL);
-    xTaskCreate(vTask_Pub, "Task_Pub", 128, NULL, 7, NULL);
-    xTaskCreate(vTask_Write, "Task_Write", 128, NULL, 6, NULL);
-    xTaskCreate(vElevador, "vElevador", 128, NULL, 2, NULL);
-    xTaskCreate(vEstado, "vEstado", 128, NULL, 3, NULL);
+    // Create Tasks 
+    // Before = 256 bytes allocated for each task
+    // 4 bytes of security we will do
+
+    /*128 * 2 = 256
+      --51/8 = 6,375 = 7 + 20 = 11
+      51 - 20 = 31
+      256 - 31 = 225 bytes
+      245/2 = 123  
+    */
+    xTaskCreate(vSendBoxes, "vSendBoxes", 110, NULL, 5, NULL);
+    xTaskCreate(vPush, "vPush", 108, NULL, 4, NULL);
+    xTaskCreate(vPalete, "vPalete", 109, NULL, 1, NULL);
+    xTaskCreate(vTask_Pub, "Task_Pub", 120, NULL, 7, NULL);
+    xTaskCreate(vTask_Write, "Task_Write", 97, NULL, 6, NULL);
+    xTaskCreate(vElevador, "vElevador", 107, NULL, 2, NULL);
+    xTaskCreate(vEstado, "vEstado", 105, NULL, 3, NULL);
 
     // Start the Scheduler
     vTaskStartScheduler();

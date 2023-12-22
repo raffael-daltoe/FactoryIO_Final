@@ -33,9 +33,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_macro  00003db3  00000000  00000000  0002cfe6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_line   0000f6c5  00000000  00000000  00030d99  2**0
+ 15 .debug_line   0000f6c7  00000000  00000000  00030d99  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_str    0007268b  00000000  00000000  0004045e  2**0
+ 16 .debug_str    0007268b  00000000  00000000  00040460  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_frame  0000235c  00000000  00000000  000b2aec  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -16053,9 +16053,12 @@ int main() {
  8005964:	2108      	movs	r1, #8
  8005966:	0018      	movs	r0, r3
  8005968:	f7fa fe86 	bl	8000678 <xEventGroupSetBits>
-
-    // Create Tasks
-    xTaskCreate(vSendBoxes, "vSendBoxes", 128, NULL, 5, NULL);
+      --51/8 = 6,375 = 7 + 20 = 11
+      51 - 20 = 31
+      256 - 31 = 225 bytes
+      245/2 = 123  
+    */
+    xTaskCreate(vSendBoxes, "vSendBoxes", 110, NULL, 5, NULL);
  800596c:	4939      	ldr	r1, [pc, #228]	; (8005a54 <main+0x23c>)
  800596e:	483a      	ldr	r0, [pc, #232]	; (8005a58 <main+0x240>)
  8005970:	2300      	movs	r3, #0
@@ -16063,9 +16066,9 @@ int main() {
  8005974:	2305      	movs	r3, #5
  8005976:	9300      	str	r3, [sp, #0]
  8005978:	2300      	movs	r3, #0
- 800597a:	2280      	movs	r2, #128	; 0x80
+ 800597a:	226e      	movs	r2, #110	; 0x6e
  800597c:	f7fc f9e6 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vPush, "vPush", 128, NULL, 4, NULL);
+    xTaskCreate(vPush, "vPush", 108, NULL, 4, NULL);
  8005980:	4936      	ldr	r1, [pc, #216]	; (8005a5c <main+0x244>)
  8005982:	4837      	ldr	r0, [pc, #220]	; (8005a60 <main+0x248>)
  8005984:	2300      	movs	r3, #0
@@ -16073,9 +16076,9 @@ int main() {
  8005988:	2304      	movs	r3, #4
  800598a:	9300      	str	r3, [sp, #0]
  800598c:	2300      	movs	r3, #0
- 800598e:	2280      	movs	r2, #128	; 0x80
+ 800598e:	226c      	movs	r2, #108	; 0x6c
  8005990:	f7fc f9dc 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vPalete, "vPalete", 128, NULL, 1, NULL);
+    xTaskCreate(vPalete, "vPalete", 109, NULL, 1, NULL);
  8005994:	4933      	ldr	r1, [pc, #204]	; (8005a64 <main+0x24c>)
  8005996:	4834      	ldr	r0, [pc, #208]	; (8005a68 <main+0x250>)
  8005998:	2300      	movs	r3, #0
@@ -16083,9 +16086,9 @@ int main() {
  800599c:	2301      	movs	r3, #1
  800599e:	9300      	str	r3, [sp, #0]
  80059a0:	2300      	movs	r3, #0
- 80059a2:	2280      	movs	r2, #128	; 0x80
+ 80059a2:	226d      	movs	r2, #109	; 0x6d
  80059a4:	f7fc f9d2 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vTask_Pub, "Task_Pub", 128, NULL, 7, NULL);
+    xTaskCreate(vTask_Pub, "Task_Pub", 120, NULL, 7, NULL);
  80059a8:	4930      	ldr	r1, [pc, #192]	; (8005a6c <main+0x254>)
  80059aa:	4831      	ldr	r0, [pc, #196]	; (8005a70 <main+0x258>)
  80059ac:	2300      	movs	r3, #0
@@ -16093,9 +16096,9 @@ int main() {
  80059b0:	2307      	movs	r3, #7
  80059b2:	9300      	str	r3, [sp, #0]
  80059b4:	2300      	movs	r3, #0
- 80059b6:	2280      	movs	r2, #128	; 0x80
+ 80059b6:	2278      	movs	r2, #120	; 0x78
  80059b8:	f7fc f9c8 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vTask_Write, "Task_Write", 128, NULL, 6, NULL);
+    xTaskCreate(vTask_Write, "Task_Write", 97, NULL, 6, NULL);
  80059bc:	492d      	ldr	r1, [pc, #180]	; (8005a74 <main+0x25c>)
  80059be:	482e      	ldr	r0, [pc, #184]	; (8005a78 <main+0x260>)
  80059c0:	2300      	movs	r3, #0
@@ -16103,9 +16106,9 @@ int main() {
  80059c4:	2306      	movs	r3, #6
  80059c6:	9300      	str	r3, [sp, #0]
  80059c8:	2300      	movs	r3, #0
- 80059ca:	2280      	movs	r2, #128	; 0x80
+ 80059ca:	2261      	movs	r2, #97	; 0x61
  80059cc:	f7fc f9be 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vElevador, "vElevador", 128, NULL, 2, NULL);
+    xTaskCreate(vElevador, "vElevador", 107, NULL, 2, NULL);
  80059d0:	492a      	ldr	r1, [pc, #168]	; (8005a7c <main+0x264>)
  80059d2:	482b      	ldr	r0, [pc, #172]	; (8005a80 <main+0x268>)
  80059d4:	2300      	movs	r3, #0
@@ -16113,9 +16116,9 @@ int main() {
  80059d8:	2302      	movs	r3, #2
  80059da:	9300      	str	r3, [sp, #0]
  80059dc:	2300      	movs	r3, #0
- 80059de:	2280      	movs	r2, #128	; 0x80
+ 80059de:	226b      	movs	r2, #107	; 0x6b
  80059e0:	f7fc f9b4 	bl	8001d4c <xTaskCreate>
-    xTaskCreate(vEstado, "vEstado", 128, NULL, 3, NULL);
+    xTaskCreate(vEstado, "vEstado", 105, NULL, 3, NULL);
  80059e4:	4927      	ldr	r1, [pc, #156]	; (8005a84 <main+0x26c>)
  80059e6:	4828      	ldr	r0, [pc, #160]	; (8005a88 <main+0x270>)
  80059e8:	2300      	movs	r3, #0
@@ -16123,7 +16126,7 @@ int main() {
  80059ec:	2303      	movs	r3, #3
  80059ee:	9300      	str	r3, [sp, #0]
  80059f0:	2300      	movs	r3, #0
- 80059f2:	2280      	movs	r2, #128	; 0x80
+ 80059f2:	2269      	movs	r2, #105	; 0x69
  80059f4:	f7fc f9aa 	bl	8001d4c <xTaskCreate>
 
     // Start the Scheduler

@@ -3627,7 +3627,7 @@ LOAD C:/ST/STM32CubeIDE_1.14.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x0000000000003aa0      0x247 ./bsp/src/factory_io.o
  .debug_macro   0x0000000000003ce7       0xcc ./cmsis/device/src/system_stm32f0xx.o
 
-.debug_line     0x0000000000000000     0xf6c5
+.debug_line     0x0000000000000000     0xf6c7
  .debug_line    0x0000000000000000      0xf27 ./FreeRTOS/event_groups.o
  .debug_line    0x0000000000000f27      0xbc6 ./FreeRTOS/list.o
  .debug_line    0x0000000000001aed     0x1995 ./FreeRTOS/queue.o
@@ -3639,12 +3639,12 @@ LOAD C:/ST/STM32CubeIDE_1.14.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_line    0x00000000000088e0      0x9c7 ./TraceRecorder/streamports/Jlink_RTT/trcStreamingPort.o
  .debug_line    0x00000000000092a7      0xd9f ./TraceRecorder/trcKernelPort.o
  .debug_line    0x000000000000a046     0x1d50 ./TraceRecorder/trcStreamingRecorder.o
- .debug_line    0x000000000000bd96     0x122a ./app/src/main.o
- .debug_line    0x000000000000cfc0      0xa9a ./app/src/stm32f0xx_it.o
- .debug_line    0x000000000000da5a      0xa58 ./bsp/src/bsp.o
- .debug_line    0x000000000000e4b2      0xb8d ./bsp/src/factory_io.o
- .debug_line    0x000000000000f03f       0x7b ./cmsis/device/src/startup_stm32f072xb.o
- .debug_line    0x000000000000f0ba      0x60b ./cmsis/device/src/system_stm32f0xx.o
+ .debug_line    0x000000000000bd96     0x122c ./app/src/main.o
+ .debug_line    0x000000000000cfc2      0xa9a ./app/src/stm32f0xx_it.o
+ .debug_line    0x000000000000da5c      0xa58 ./bsp/src/bsp.o
+ .debug_line    0x000000000000e4b4      0xb8d ./bsp/src/factory_io.o
+ .debug_line    0x000000000000f041       0x7b ./cmsis/device/src/startup_stm32f072xb.o
+ .debug_line    0x000000000000f0bc      0x60b ./cmsis/device/src/system_stm32f0xx.o
 
 .debug_str      0x0000000000000000    0x7268b
  .debug_str     0x0000000000000000    0x6b6fd ./FreeRTOS/event_groups.o
