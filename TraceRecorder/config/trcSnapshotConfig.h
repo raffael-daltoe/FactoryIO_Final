@@ -189,7 +189,7 @@
 *
 * Default value is 0.
 ******************************************************************************/
-#define TRC_CFG_HEAP_SIZE_BELOW_16M 0
+#define TRC_CFG_HEAP_SIZE_BELOW_16M 1
 
 /******************************************************************************
  * TRC_CFG_USE_IMPLICIT_IFE_RULES

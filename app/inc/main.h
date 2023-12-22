@@ -1,10 +1,3 @@
-/*
- * main.h
- *
- *  Created on: 24/02/2018
- *      Author: Laurent
- */
-
 #ifndef APP_INC_MAIN_H_
 #define APP_INC_MAIN_H_
 

@@ -101,7 +101,6 @@
 #define A19_OFF  0x00<<(19+2)
 #define A19_Msk 0x01<<(19+2)
 
-///////////////////// SENSORS //////////////////////////
 // Sensors 0 : Carton distribu�
 #define S0_Pos 0x01<<(0+0)
 #define S0_OFF 0x00<<(0+0)

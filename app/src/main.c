@@ -106,8 +106,8 @@ int main() {
     // Default synchronization to 1
     xEventGroupSetBits(taskSync, BOXES_SENDED);
 
-    // Create Tasks
-    xTaskCreate(vSendBoxes, "vSendBoxes", 128, NULL, 5, NULL);
+    // Create Tasks // 256 bytes allocated for each task
+    xTaskCreate(vSendBoxes, "vSendBoxes", 128, NULL, 5, NULL); 
     xTaskCreate(vPush, "vPush", 128, NULL, 4, NULL);
     xTaskCreate(vPalete, "vPalete", 128, NULL, 1, NULL);
     xTaskCreate(vTask_Pub, "Task_Pub", 128, NULL, 7, NULL);
